@@ -1,0 +1,62 @@
+{#
+ * This file is part of Leymonaide's homepage.
+ * Copyright (c) 2025 Leymonaide.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+#}
+<!DOCTYPE html>
+{# The lang attribute on the root element is inserted with the JS runtime. #}
+{% import "macros.njk" as macros %}
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        {# Fit site width to device width, useful for mobile phones. #}
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>{{ app.pageTitle }} - Leymonaide</title>
+        <meta name="author" content="Leymonaide">
+
+        {# A limitation of the static design is that metadata properties are not
+           available for multiple languages. #}
+        <meta property="og:title" content="{{ app.pageTitle }}">
+
+        <meta name="twitter:card" content="summary_large_image">
+
+        {# Initialize page JS configuration. #}
+        <script>{{ "window.leymonaide={cfg_:{}" ~ "};" }}</script>
+        {{ macros.inline_js("load_language") }}
+    </head>
+    <body class="initial-loading">
+        {# The theme should be loaded as soon as the body class exists. #}
+        {{ macros.inline_js("load_theme") }}
+        <div class="initial-loading-container">
+            <div class="spinner"></div>
+        </div>
+        {% include "noscript_container.njk" %}
+        <div id="body-container">
+            {% import "navigation.njk" as navigation %}
+            {{ navigation.render(app.navigation) }}
+            <div class="navigation-drawer hid">
+                <div class="background"></div>
+                <ul>
+                    {# The navigation drawer is filled in at runtime. #}
+                </ul>
+            </div>
+            <div id="content">
+                {# Content is loaded at runtime via AJAX. #}
+            </div>
+        </div>
+    </body>
+</html>
