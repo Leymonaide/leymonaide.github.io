@@ -1,6 +1,6 @@
 /* 
  * This file is part of Leymonaide's homepage.
- * Copyright (c) 2025 Leymonaide.
+ * Copyright (c) 2026 Leymonaide.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -16,32 +16,36 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Navigation } from "./Navigation";
-import { PageTitle } from "./PageTitle";
-
-/**
- * The root class for variables exposed to templates.
- */
-export class App
+export class PageTitle
 {
-    /**
-     * The source code for all inlined JS strings.
-     */
-    public readonly inlinedJs: Record<string, string>;
+    private titleLine: string;
 
-    /**
-     * A set of navigation elements.
-     */
-    public readonly navigation: Navigation;
-
-    /**
-     * The title of the page.
-     */
-    public pageTitle: PageTitle;
-
-    public constructor(inlinedJs: Record<string, string>)
+    public constructor(titleLine: string)
     {
-        this.pageTitle = new PageTitle("");
-        this.inlinedJs = inlinedJs;
+        this.titleLine = titleLine;
+    }
+
+    public getTitleLine(): string
+    {
+        return this.titleLine;
+    }
+
+    /**
+     * Gets the decorated title, including the site attribution.
+     * 
+     * This is intended to be used for page metadata which appears in the chrome
+     * of the web browser and on search engines.
+     */
+    public getDecoratedTitle(): string
+    {
+        const title = this.getTitleLine();
+        if (title == "")
+        {
+            return "Leymonaide";
+        }
+        else
+        {
+            return title + " - Leymonaide";
+        }
     }
 }

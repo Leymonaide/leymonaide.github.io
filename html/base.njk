@@ -25,12 +25,12 @@
         {# Fit site width to device width, useful for mobile phones. #}
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ app.pageTitle }} - Leymonaide</title>
+        <title>{{ app.pageTitle.getDecoratedTitle() }}</title>
         <meta name="author" content="Leymonaide">
 
         {# A limitation of the static design is that metadata properties are not
            available for multiple languages. #}
-        <meta property="og:title" content="{{ app.pageTitle }}">
+        <meta property="og:title" content="{{ app.pageTitle.getDecoratedTitle() }}">
 
         <meta name="twitter:card" content="summary_large_image">
 
