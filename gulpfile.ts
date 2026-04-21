@@ -24,6 +24,11 @@ import { pipeline } from "readable-stream";
 import * as through2 from "through2";
 import { PageBuilder } from "./js/build/build_page.ts";
 import * as fs from "fs/promises";
+import gulpSassBuilder from "gulp-sass";
+import dartSassCompiler from "sass";
+import { ProcessCss } from "./js/build/process_css.ts";
+
+const gulpSassInstance = gulpSassBuilder(dartSassCompiler);
 
 /**
  * Determines if this is a fast build.
@@ -105,6 +110,38 @@ function buildInlineJs(): NodeJS.WritableStream
     )
 }
 
+function buildCss(): NodeJS.WritableStream
+{
+    return pipeline(
+        gulp.src("css/*.scss"),
+        through2.obj(async function (
+            file: VinylFile,
+            encoding: BufferEncoding,
+            callback: through2.TransformCallback,
+        )
+        {
+            try
+            {
+                const cssProcessor = new ProcessCss(file.path, file.contents.toString());
+                await cssProcessor.process();
+                file.contents = Buffer.from(cssProcessor.getResult());
+                console.log(file.contents.toString());
+                this.push(file);
+            }
+            catch (e)
+            {
+                console.error("Fuck.", e);
+            }
+            finally
+            {
+                callback();
+            }
+        }),
+        gulpSassInstance().on("error", gulpSassInstance.logError),
+        gulp.dest("output/static/css")
+    );
+}
+
 async function buildPages(): Promise<void>
 {
     const pageBuilder = new PageBuilder(g_inlineJs);
@@ -119,10 +156,13 @@ export function slow(): TaskFunction
 
 export function build(): TaskFunction
 {
-    return gulp.series(
-        // Inline JS must be built before pages.
-        buildInlineJs,
-        buildPages,
+    return gulp.parallel(
+        buildCss,
+        gulp.series(
+            // Inline JS must be built before pages.
+            buildInlineJs,
+            buildPages,
+        ),
     );
 }
 
