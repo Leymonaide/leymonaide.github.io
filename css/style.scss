@@ -39,6 +39,7 @@ html
 {
     --topbar-textured-bg: embed-svg("svg/topbar_bg.svg");
     --content-wash-bg-color: rgba(255, 255, 255, 0.4);
+    --page-width: 865px;
 }
 
 .topbar-style
@@ -56,6 +57,14 @@ html
             color.scale($topbar-base-bg-color, $lightness: -45%));
 
     box-shadow: 0 2px 3px rgba(0, 0, 0, .25);
+
+    ul
+    {
+        padding: 0;
+        width: var(--page-width);
+        margin: 0 auto;
+        text-align: center;
+    }
 
     li
     {
@@ -97,7 +106,7 @@ html
 {
     background: var(--content-wash-bg-color);
     position: relative;
-    width: 837px;
+    width: calc(var(--page-width) - (14px * 2));
     padding: calc(14px + $topbar-height) 14px 15px;
     margin: 0 auto;
 }
