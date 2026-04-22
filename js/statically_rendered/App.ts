@@ -17,6 +17,7 @@
  */
 
 import { Navigation } from "./Navigation";
+import { NavigationItem } from "./NavigationItem";
 import { PageTitle } from "./PageTitle";
 
 /**
@@ -39,9 +40,22 @@ export class App
      */
     public pageTitle: PageTitle;
 
-    public constructor(inlinedJs: Record<string, string>)
+    /**
+     * The base name of the page.
+     */
+    private _pageBaseName: string;
+
+    public constructor(inlinedJs: Record<string, string>, pageBaseName: string)
     {
+        this._pageBaseName = pageBaseName;
         this.pageTitle = new PageTitle("");
         this.inlinedJs = inlinedJs;
+
+        this.navigation = new Navigation();
+        this.navigation.insertItem(new NavigationItem("Home", "home", "/"));
+        this.navigation.insertItem(new NavigationItem("Another tab", "another-tab", "/abc"));
+        this.navigation.insertItem(new NavigationItem("Yet another tab", "yet-another-tab", "/def"));
+
+        this.navigation.selectItemFromBaseName(this._pageBaseName);
     }
 }

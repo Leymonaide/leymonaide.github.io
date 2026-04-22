@@ -50,6 +50,8 @@ export class PageBuilder
                 outFilePath = "index";
             }
 
+            let baseName = outFilePath;
+
             outFilePath += ".html";
 
             const nunjucksEnv = new nunjucks.Environment(
@@ -67,7 +69,7 @@ export class PageBuilder
                 recursive: true,
             });
 
-            const app = new App(this.inlineJs);
+            const app = new App(this.inlineJs, baseName);
             nunjucksEnv.addGlobal("app", app);
 
             // Write the page fragment for the page:

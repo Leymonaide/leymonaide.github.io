@@ -16,19 +16,88 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+@use "sass:color";
+
 body
 {
+    font-family: Arial, Helvetica, sans-serif;
     margin: 0;
+
+    // I think this is a cute color for now.
+    background-color: #EDE8C0;
+}
+
+ul
+{
+    margin: 0;
+    list-style: none;
+}
+
+$topbar-height: 40px;
+
+html
+{
+    --topbar-textured-bg: embed-svg("svg/topbar_bg.svg");
+    --content-wash-bg-color: rgba(255, 255, 255, 0.4);
 }
 
 .topbar-style
 {
-    height: 40px;
-    background: embed-svg("svg/topbar_bg.svg"), 
-        linear-gradient(to bottom, rgb(63, 63, 63), rgb(35, 35, 35));
-    
-    ul
+    $topbar-base-bg-color: rgb(63, 63, 63);
+    $topbar-base-text-color: #fff;
+
+    height: $topbar-height;
+    z-index: 1000; // The topbar should appear above everything.
+    position: fixed;
+    width: 100%; // Required with fixed position.
+
+    background: var(--topbar-textured-bg), 
+        linear-gradient(to bottom, $topbar-base-bg-color,
+            color.scale($topbar-base-bg-color, $lightness: -45%));
+
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .25);
+
+    li
     {
-        margin: 0;
+        float: left;
+
+        a
+        {
+            display: block;
+            height: 12px;
+            padding: 13px 12px 15px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1;
+            /* aim for bbb */
+            color: color.scale($topbar-base-text-color, $lightness: -25%);
+            text-shadow: 0 -1px -1px rgba(0, 0, 0, .75);
+        }
+
+        a:hover, &.active a
+        {
+            color: $topbar-base-text-color;
+        }
+
+        &.active a
+        {
+            /* aim for 48 48 48, 28 28 28 */
+            background: var(--topbar-textured-bg),
+                linear-gradient(to bottom, 
+                    color.scale($topbar-base-bg-color, $lightness: -25%), 
+                    color.scale($topbar-base-bg-color, $lightness: -55%));
+            box-shadow: inset 0 5px 10px rgba(0,0,0,.5);
+            text-shadow: 0 1px 1px rgba(0, 0, 0, .5);
+        }
     }
+}
+
+#content
+{
+    background: var(--content-wash-bg-color);
+    position: relative;
+    width: 837px;
+    padding: calc(14px + $topbar-height) 14px 15px;
+    margin: 0 auto;
 }

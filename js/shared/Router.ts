@@ -21,6 +21,7 @@ interface IRoute
     readonly uri: string;
     readonly fragmentsUri: string;
     readonly contentTemplate: string;
+    readonly allowWildcardMatch?: string;
 }
 
 export class Router
@@ -43,7 +44,7 @@ export class Router
         for (const route of this.ROUTES)
         {
             // TODO: Support for wildcard matching.
-            if (uri.startsWith(route.uri))
+            if (uri == route.uri)
             {
                 return route;
             }

@@ -16,6 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Router } from "../shared/Router";
 import { NavigationItem } from "./NavigationItem";
 
 /**
@@ -24,9 +25,40 @@ import { NavigationItem } from "./NavigationItem";
 export class Navigation
 {
     private _items: NavigationItem[] = [];
+    private _activeItemIndex: number = -1;
+
+    public insertItem(item: NavigationItem): void
+    {
+        this._items.push(item);
+    }
 
     public get items(): NavigationItem[]
     {
         return this._items;
+    }
+
+    public getActiveItem(): NavigationItem|null
+    {
+        if (-1 == this._activeItemIndex)
+        {
+            return null;
+        }
+
+        return this._items[this._activeItemIndex];
+    }
+
+    public selectItemFromBaseName(baseName: string): void
+    {
+        this._activeItemIndex = -1;
+        for (let i = 0; i < this._items.length; i++)
+        {
+            const item = this._items[i];
+
+            const routeResult = Router.routeUri(item.href);
+            if (routeResult && routeResult.contentTemplate === baseName)
+            {
+                this._activeItemIndex = i;
+            }
+        }
     }
 }

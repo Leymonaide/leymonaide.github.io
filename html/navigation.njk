@@ -20,10 +20,11 @@
     <nav id="sitewide-nav" class="topbar-style">
         <ul>
             {% for item in navigation.items %}
-                <li>
+                <li{% if item == navigation.getActiveItem() %} class="active"{% endif %}>
                     <a href="{{ item.href }}">
                         <span class="icon {{ item.icon }}"></span>
-                        <span class="label" data-string="{{ item.label }}"></span>
+                        {# TODO: Remove the static string once localization is implemented. #}
+                        <span class="label" data-string="{{ item.title }}">{{ item.title }}</span>
                     </a>
                 </li>
             {% endfor %}
