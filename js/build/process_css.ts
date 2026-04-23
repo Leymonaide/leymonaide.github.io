@@ -45,12 +45,9 @@ export class ProcessCss
     {
         const inlineSvgRequests = Array.from(this.contents.matchAll(/embed-svg\s*\(["|']?(.*?)["|']?\)/g));
 
-        console.log(inlineSvgRequests);
-
         for (let i = inlineSvgRequests.length - 1; i >= 0; i--)
         {
             const request = inlineSvgRequests[i];
-            console.log(request);
             const svgPath = path.join(path.dirname(this.fileName), request[1]);
             
             await this.substituteInlinedSvg(request[0], svgPath);

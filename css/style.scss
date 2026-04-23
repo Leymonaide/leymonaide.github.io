@@ -40,6 +40,11 @@ html
     --topbar-textured-bg: embed-svg("svg/topbar_bg.svg");
     --content-wash-bg-color: rgba(255, 255, 255, 0.4);
     --page-width: 865px;
+    --module-bg-color-primary: hsl(0, 0%, 98%);
+    --module-bg-color-secondary: hsl(0, 0%, 96%);
+    --module-bg-border: hsl(0, 0%, 91%);
+    --module-prominent-text: hsl(0, 0%, 20%);
+    --module-light-text: hsl(0, 0%, 60%);
 }
 
 .topbar-style
@@ -111,4 +116,84 @@ html
         var(--content-padding) 
         var(--content-padding);
     margin: 0 auto;
+
+    .col1
+    {
+        width: 302px; // TODO: Make this dynamic.
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.module
+{
+    border: 1px solid rgba(0, 0, 0, .1);
+
+    position: relative;
+    margin-bottom: 10px;
+    line-height: 16px;
+    border-radius: 6px;
+    background-clip: padding-box;
+
+    // Clip all children to the shape of the module. This means that the
+    // border radius won't have to be duplicated for each possible child
+    // element.
+    overflow: hidden;
+}
+
+.mini-profile
+{
+    font-size: 12px;
+
+    .avatar
+    {
+        margin-right: 8px;
+    }
+    
+    .name
+    {
+        display: block;
+        font-size: 14px;
+        color: var(--module-prominent-text);
+    }
+
+    .about-link
+    {
+        font-size: 11px;
+        color: var(--module-light-text);
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mini-profile-content
+    {
+        background: var(--module-bg-color-primary);
+        padding: 12px;
+        line-height: 16px;
+        display: flex;
+    }
+
+    .socials
+    {
+        border-top: 1px solid var(--module-bg-border);
+        background: var(--module-bg-color-secondary);
+        padding: 12px;
+        line-height: 16px;
+    }
+}
+
+.avatar
+{
+    width: 48px;
+    height: 48px;
+    border-radius: 5px;
+
+    &.size32
+    {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+    }
 }

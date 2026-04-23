@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-interface IRoute
+export interface IRoute
 {
     readonly uri: string;
     readonly fragmentsUri: string;

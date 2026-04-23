@@ -28,6 +28,7 @@ import gulpSassBuilder from "gulp-sass";
 import dartSassCompiler from "sass";
 import { ProcessCss } from "./js/build/process_css.ts";
 import gulp_esbuild from "gulp-esbuild";
+import { Transform } from "stream";
 
 const gulpSassInstance = gulpSassBuilder(dartSassCompiler);
 
@@ -44,34 +45,60 @@ let g_fastBuild: boolean = true;
  */
 const g_inlineJs: Record<string, string> = {};
 
-function buildInlineJs(): NodeJS.WritableStream
+class CacheManager
 {
-    return pipeline(
-        gulp.src("js/inline/*.ts"),
-        through2.obj(async function (
+    public static readFromCache(
+        category: string,
+        transformFileNameCb: (str:string) => string|null = null,
+        onSuccessfulCacheReadCb: (file:VinylFile, fh:fs.FileHandle) => Promise<void>|null = null,
+    ): Transform
+    {
+        return through2.obj(async function (
             file: VinylFile,
             encoding: BufferEncoding,
             callback: through2.TransformCallback,
         )
         {
+            if (!g_fastBuild)
+            {
+                this.push(file);
+                callback();
+                return;
+            }
+
             try
             {
-                const basename = file.basename.replace(".ts", ".js");
-                let cacheFile = await fs.stat(`cache/inline_js/${basename}`);
+                let cacheFileName = transformFileNameCb
+                    ? transformFileNameCb(file.basename)
+                    : file.basename;
+                console.error(`Attempting to read file "${file.basename}" using transformed file name "${cacheFileName}" from cache.`);
+
+                let cacheFile = await fs.stat(`cache/${category}/${cacheFileName}`);
                 let originalFile = await fs.stat(file.path);
                 
                 // Recompile.
                 if (originalFile.mtime > cacheFile.mtime)
                 {
+                    console.error("The last modified time changed. Cache invalidated.");
                     this.push(file);
                     return;
                 }
                 
-                const fh = await fs.open(`cache/inline_js/${basename}`);
-                const scriptName = file.basename.split(".")[0];
-                g_inlineJs[scriptName] = await fh.readFile({encoding: "utf8"});
+                const fh = await fs.open(`cache/${category}/${cacheFileName}`);
+                try
+                {
+                    if (onSuccessfulCacheReadCb)
+                    {
+                        await onSuccessfulCacheReadCb(file, fh);
+                    }
+                }
+                finally
+                {
+                    fh.close();
+                }
 
                 // The file is not pushed intentionally. It is read from cache.
+                console.error("Reading file from cache.");
             }
             catch (e)
             {
@@ -82,51 +109,96 @@ function buildInlineJs(): NodeJS.WritableStream
             {
                 callback();
             }
-        }),
-        gulp_ts({
-            rootDir: process.cwd(),
-            module: "es2015",
-            moduleResolution: "node",
-        }),
-        gulp_uglify(),
-        through2.obj(async function(file: VinylFile, encoding: BufferEncoding,
+        });
+    }
+
+    public static writeToCache(
+        category: string,
+        onSuccessfulCacheWriteCb: (file:VinylFile, fh:fs.FileHandle) => Promise<void>|null = null,
+    ): Transform
+    {
+        return through2.obj(async function(file: VinylFile, encoding: BufferEncoding,
             callback: through2.TransformCallback)
         {
+            console.error(`Attempting to write file "${file.basename}" to cache.`);
             if (null === file.contents)
             {
                 callback(new Error("File does not have contents."));
             }
 
             // Write cache files:
-            await fs.mkdir("cache/inline_js", { recursive: true });
-            let fh = await fs.open(`cache/inline_js/${file.basename}`, "w");
+            await fs.mkdir(`cache/${category}`, { recursive: true });
+            let fh = await fs.open(`cache/${category}/${file.basename}`, "w");
             fh.writeFile(file.contents!.toString());
 
-            const scriptName = file.basename.split(".")[0];
-            g_inlineJs[scriptName] = file.contents!.toString();
+            try
+            {
+                if (onSuccessfulCacheWriteCb)
+                {
+                    onSuccessfulCacheWriteCb(file, fh);
+                }
+            }
+            finally
+            {
+                fh.close();
+            }
 
             this.push(file);
             callback();
+        });
+    }
+}
+
+function buildInlineJs(): NodeJS.WritableStream
+{
+    return pipeline(
+        gulp.src("js/inline/*.ts"),
+        CacheManager.readFromCache(
+            "inline_js",
+            (s) => s.replace(".ts", ".js"),
+            async (file, fh) => {
+                const scriptName = file.basename.split(".")[0];
+                g_inlineJs[scriptName] = await fh.readFile({encoding: "utf8"});
+            },
+        ),
+        gulp_ts({
+            rootDir: process.cwd(),
+            module: "es2015",
+            moduleResolution: "node",
         }),
+        gulp_uglify(),
+        CacheManager.writeToCache(
+            "inline_js",
+            async (file, fh) => {
+                const scriptName = file.basename.split(".")[0];
+                g_inlineJs[scriptName] = file.contents!.toString();
+            },
+        ),
     )
 }
 
 function buildJsScripts(): NodeJS.WritableStream
 {
+    const outputBundleName = "core.js";
+
     return pipeline(
         gulp.src("js/client/main.ts"),
+        CacheManager.readFromCache(
+            "client_js",
+            (s) => outputBundleName,
+        ),
         gulp_ts({
             rootDir: process.cwd(),
             module: "es2015",
             moduleResolution: "node",
         }),
         gulp_esbuild({
-            outfile: "core.js",
+            outfile: outputBundleName,
             bundle: true,
-            // loader: {
-            //     ".ts": "js",
-            // },
         }),
+        CacheManager.writeToCache(
+            "client_js",
+        ),
         gulp.dest("output/static/js")
     );
 }
@@ -146,7 +218,6 @@ function buildCss(): NodeJS.WritableStream
                 const cssProcessor = new ProcessCss(file.path, file.contents.toString());
                 await cssProcessor.process();
                 file.contents = Buffer.from(cssProcessor.getResult());
-                console.log(file.contents.toString());
                 this.push(file);
             }
             catch (e)
@@ -169,23 +240,42 @@ async function buildPages(): Promise<void>
     await pageBuilder.buildPages();
 }
 
-export function slow(): TaskFunction
+export function pagesTask(): TaskFunction
+{
+    return gulp.series(
+        // Inline JS must be built before pages.
+        buildInlineJs,
+        buildPages,
+    );
+}
+
+function cssTask(): TaskFunction
+{
+    return gulp.series(buildCss);
+}
+
+function jsTask(): TaskFunction
+{
+    return gulp.series(buildJsScripts);
+}
+
+function slowTask(): TaskFunction
 {
     g_fastBuild = false;
     return build();
 }
 
-export function build(): TaskFunction
+function build(): TaskFunction
 {
+    g_fastBuild = true;
     return gulp.parallel(
+        pagesTask(),
         buildCss,
         buildJsScripts,
-        gulp.series(
-            // Inline JS must be built before pages.
-            buildInlineJs,
-            buildPages,
-        ),
     );
 }
 
 export default build();
+export const css = cssTask();
+export const js = jsTask();
+export const slow = slowTask();
