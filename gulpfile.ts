@@ -27,6 +27,7 @@ import * as fs from "fs/promises";
 import gulpSassBuilder from "gulp-sass";
 import dartSassCompiler from "sass";
 import { ProcessCss } from "./js/build/process_css.ts";
+import gulp_esbuild from "gulp-esbuild";
 
 const gulpSassInstance = gulpSassBuilder(dartSassCompiler);
 
@@ -110,6 +111,26 @@ function buildInlineJs(): NodeJS.WritableStream
     )
 }
 
+function buildJsScripts(): NodeJS.WritableStream
+{
+    return pipeline(
+        gulp.src("js/client/main.ts"),
+        gulp_ts({
+            rootDir: process.cwd(),
+            module: "es2015",
+            moduleResolution: "node",
+        }),
+        gulp_esbuild({
+            outfile: "core.js",
+            bundle: true,
+            // loader: {
+            //     ".ts": "js",
+            // },
+        }),
+        gulp.dest("output/static/js")
+    );
+}
+
 function buildCss(): NodeJS.WritableStream
 {
     return pipeline(
@@ -158,6 +179,7 @@ export function build(): TaskFunction
 {
     return gulp.parallel(
         buildCss,
+        buildJsScripts,
         gulp.series(
             // Inline JS must be built before pages.
             buildInlineJs,

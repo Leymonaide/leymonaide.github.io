@@ -79,7 +79,6 @@ html
             font-size: 12px;
             font-weight: bold;
             line-height: 1;
-            /* aim for bbb */
             color: color.scale($topbar-base-text-color, $lightness: -25%);
             text-shadow: 0 -1px -1px rgba(0, 0, 0, .75);
         }
@@ -91,7 +90,6 @@ html
 
         &.active a
         {
-            /* aim for 48 48 48, 28 28 28 */
             background: var(--topbar-textured-bg),
                 linear-gradient(to bottom, 
                     color.scale($topbar-base-bg-color, $lightness: -25%), 
@@ -104,9 +102,13 @@ html
 
 #content
 {
+    --content-padding: 14px;
+
     background: var(--content-wash-bg-color);
     position: relative;
-    width: calc(var(--page-width) - (14px * 2));
-    padding: calc(14px + $topbar-height) 14px 15px;
+    width: calc(var(--page-width) - (var(--content-padding) * 2));
+    padding: calc(var(--content-padding) + $topbar-height) 
+        var(--content-padding) 
+        var(--content-padding);
     margin: 0 auto;
 }
