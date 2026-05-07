@@ -1,6 +1,6 @@
 /* 
  * This file is part of Leymonaide's homepage.
- * Copyright (c) 2025 Leymonaide.
+ * Copyright (c) 2025-2026 Leymonaide.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,19 +21,20 @@
 
 import { SiteConfig } from "../interface/SiteConfig";
 
-(function() {
-    const APP_SUPPORTED_LANGUAGES: string[] = [
-        "en",
-        "ja",
-        "es",
-        "pt",
-    ];
+const APP_SUPPORTED_LANGUAGES: string[] = [
+    "en",
+    "ja",
+    "es",
+    "pt",
+];
 
-    const LANGUAGE_ALIASES: Record<string, string> = {
-        "en-US": "en",
-        "en-GB": "en",
-    };
+const LANGUAGE_ALIASES: Record<string, string> = {
+    "en-US": "en",
+    "en-GB": "en",
+};
 
+export default function loadSitewideLanguage(): void
+{
     const siteConfig: SiteConfig = window["leymonaide"]["cfg_"];
 
     // The default language is English.
@@ -55,4 +56,4 @@ import { SiteConfig } from "../interface/SiteConfig";
     }
 
     document.documentElement.setAttribute("lang", siteConfig.LANGUAGE);
-})();
+}

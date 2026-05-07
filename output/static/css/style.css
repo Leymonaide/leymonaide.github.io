@@ -15,10 +15,30 @@
  * You should have received a copy of the GNU Affero General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+.initial-loading-container {
+  z-index: 999999;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #EDE8C0;
+  display: none;
+}
+
+#body-container {
+  opacity: 100%;
+  transition: opacity 200ms;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   background-color: #EDE8C0;
+}
+body.initial-loading .initial-loading-container {
+  display: block;
+}
+body.initial-loading #body-container {
+  opacity: 0%;
 }
 
 ul {

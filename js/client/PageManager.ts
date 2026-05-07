@@ -16,13 +16,40 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { BodyClasses } from "../interface/BodyClasses";
 import { Router } from "../shared/Router";
+import * as navigation from "./navigation";
 
 export default class PageManager
 {
     public async loadInitialPage(): Promise<void>
     {
+        await this.loadPageContainer();
+
+        // The common template for the sitewide navigation doesn't have a
+        // selected item, so the corresponding navigation item to the current
+        // page must be selected now.
+        try
+        {
+            navigation.updateNavBarSelectedItem();
+        }
+        catch (e)
+        {
+            console.error(e);
+        }
+        
         await this.loadPageFragmentsForUrl(window.location.pathname);
+        document.body.classList.remove(BodyClasses.InitialLoading);
+    }
+
+    public async loadPageContainer(): Promise<void>
+    {
+        const fragmentsDocument = await fetch("/fragment/body_container");
+        const text = await fragmentsDocument.text();
+
+        const contentElement = document.querySelector("#body-container");
+        
+        contentElement.innerHTML = text;
     }
 
     public async loadPageFragmentsForUrl(url: string): Promise<void>

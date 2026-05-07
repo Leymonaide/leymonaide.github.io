@@ -26,6 +26,19 @@ import { PageTitle } from "./PageTitle";
 export class App
 {
     /**
+     * A string representing the application resource version. This is used for
+     * cache control.
+     */
+    public readonly appResourceVersion: string = "1";
+
+    /**
+     * Denotes if the page was rendered statically or dynamically.
+     * 
+     * This option is currently not used.
+     */
+    public staticRender: boolean = false;
+
+    /**
      * The source code for all inlined JS strings.
      */
     public readonly inlinedJs: Record<string, string>;

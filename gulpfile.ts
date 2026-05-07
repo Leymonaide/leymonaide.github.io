@@ -38,7 +38,7 @@ const gulpSassInstance = gulpSassBuilder(dartSassCompiler);
  * A fast build caches certain build artifacts. It should not be used for GitHub
  * Actions builds, where the build environment is unique per each build.
  */
-let g_fastBuild: boolean = true;
+let g_fastBuild: boolean = null;
 
 /**
  * A map of inlined JS file names to their minified code.
@@ -267,7 +267,10 @@ function slowTask(): TaskFunction
 
 function build(): TaskFunction
 {
-    g_fastBuild = true;
+    if (null === g_fastBuild)
+    {
+        g_fastBuild = true;
+    }
     return gulp.parallel(
         pagesTask(),
         buildCss,

@@ -36,6 +36,13 @@ export class PageBuilder
         const routes = Router.getAllRoutes();
         const fileWritePromises: Promise<any>[] = [];
 
+        // Pseudo-route: the body-container fragment.
+        routes.push({
+            fragmentsUri: "/fragment/body_container",
+            uri: "body_container",
+            contentTemplate: "body_container_fragment",
+        });
+
         for (const route of routes)
         {
             let outFilePath = route.uri;
