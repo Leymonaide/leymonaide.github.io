@@ -16,24 +16,27 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import PageManager from "./PageManager";
+import * as pageManager from "./page_manager";
+import * as eventManager from "./event_manager"
 import * as localization from "./localization";
 
 (function(){
     localization.init();
+    eventManager.init();
 
     localization.sitewideLanguageLoaded().then(function()
     {
         localization.decorateAllElements();
-    });
+    });    
 
-    const g_pageManager = new PageManager();
     try
     {
-        g_pageManager.loadInitialPage();
+        pageManager.loadInitialPage();
     }
     catch (e)
     {
+        document.body.classList.add("sitewide-error");
+        
         // Temporary logic probably:
         document.body.textContent = e;
     }

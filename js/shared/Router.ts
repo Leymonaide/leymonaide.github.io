@@ -37,6 +37,21 @@ export class Router
             fragmentsUri: "/fragment/about",
             contentTemplate: "about",
         },
+        {
+            uri: "/projects/index",
+            fragmentsUri: "/fragment/projects",
+            contentTemplate: "projects",
+        },
+        {
+            uri: "/projects/rehike",
+            fragmentsUri: "/fragment/projects_rehike",
+            contentTemplate: "projects_rehike",
+        },
+        {
+            uri: "/projects/retwitter",
+            fragmentsUri: "/fragment/projects_retwitter",
+            contentTemplate: "projects_retwitter",
+        },
     ];
 
     public static routeUri(uri: string): IRoute|null
@@ -44,7 +59,7 @@ export class Router
         for (const route of this.ROUTES)
         {
             // TODO: Support for wildcard matching.
-            if (uri == route.uri)
+            if (uri == route.uri || (uri + "/index").replace(/\/+/g, "/") == route.uri)
             {
                 return route;
             }

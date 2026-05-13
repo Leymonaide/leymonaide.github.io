@@ -1,0 +1,110 @@
+/* 
+ * This file is part of Leymonaide's homepage.
+ * Copyright (c) 2026 Leymonaide.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import { BodyClasses } from "../interface/BodyClasses";
+import { Router } from "../shared/Router";
+import * as navigation from "./navigation";
+import * as localization from "./localization";
+
+export async function loadInitialPage(): Promise<void>
+{
+    await loadPageContainer();
+
+    // The common template for the sitewide navigation doesn't have a
+    // selected item, so the corresponding navigation item to the current
+    // page must be selected now.
+    navigation.updateNavBarSelectedItem();
+    
+    await loadPageFragmentsForUrl(window.location.pathname);
+
+    // Remove the initial loading class. If more than 250 milliseconds have
+    // ellapsed since the page started loading, then a transition animation
+    // from the loading screen will be presented to the user. Otherwise, the
+    // transition will be disabled.
+    const initialLoadTime: number|null =
+        window["leymonaide"]?.cfg_?.INITIAL_LOAD_TIME ?? null;
+    if (initialLoadTime && initialLoadTime + 250 > Date.now())
+    {
+        document.querySelector("#body-container")
+            ?.classList.add("no-transition");
+    }
+    document.body.classList.remove(BodyClasses.InitialLoading);
+}
+
+export async function loadPageContainer(): Promise<void>
+{
+    const fragmentsDocument = await fetch("/fragment/body_container");
+    const text = await fragmentsDocument.text();
+
+    const contentElement = document.querySelector("#body-container");
+    
+    contentElement.innerHTML = text;
+
+    await localization.sitewideLanguageLoaded();
+    localization.decorateAllElements();
+}
+
+export async function loadPageFragmentsForUrl(url: string): Promise<void>
+{
+    const route = Router.routeUri(url);
+
+    if (!route)
+    {
+        throw new Error(`The requested page for URL "${url}" could not be routed`);
+    }
+
+    const fragmentsDocument = await fetch(route.fragmentsUri);
+    const text = await fragmentsDocument.text();
+
+    const contentElement = document.querySelector("#content");
+    
+    // CONSIDER: Using DOM parser and inserting nodes so that inserting
+    // scripts just works.
+    contentElement.innerHTML = text;
+
+    await localization.sitewideLanguageLoaded();
+    localization.decorateAllElements();
+}
+
+export async function navigateToPage(url: string): Promise<void>
+{
+    const route = Router.routeUri(url);
+
+    if (!route)
+    {
+        // This is a bad URL, so we will navigate to it manually.
+        window.location.href = url;
+        return;
+    }
+
+    document.body.classList.add(BodyClasses.LoadingAjax);
+
+    try
+    {
+        await loadPageFragmentsForUrl(url);
+        window.history.pushState(null, null, url);
+        navigation.updateNavBarSelectedItem();
+
+        document.body.classList.remove(BodyClasses.LoadingAjax);
+    }
+    catch (e)
+    {
+        window.location.href = url;
+        return;
+    }
+}

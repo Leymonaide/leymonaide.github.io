@@ -76,6 +76,17 @@ export class PageBuilder
                 recursive: true,
             });
 
+            // Ensure that all parents of the path exist in the output directory:
+            const roots = outFilePath.split("/");
+            roots.pop();
+            if (roots.length > 0)
+            {
+                let path = "output/" + roots.join("/");
+                await fs.mkdir(path, {
+                    recursive: true
+                });
+            }
+
             const app = new App(this.inlineJs, baseName);
             nunjucksEnv.addGlobal("app", app);
 
@@ -91,7 +102,7 @@ export class PageBuilder
                 });
 
                 const fhPromise = fs.open(
-                    `output/fragment/${outFilePath}`, "w"
+                    `output/${route.fragmentsUri}.html`, "w"
                 ).then(
                     (fh: fs.FileHandle) =>
                     {

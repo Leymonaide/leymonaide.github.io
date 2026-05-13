@@ -11,11 +11,26 @@
         uri: "/about",
         fragmentsUri: "/fragment/about",
         contentTemplate: "about"
+      },
+      {
+        uri: "/projects/index",
+        fragmentsUri: "/fragment/projects",
+        contentTemplate: "projects"
+      },
+      {
+        uri: "/projects/rehike",
+        fragmentsUri: "/fragment/projects_rehike",
+        contentTemplate: "projects_rehike"
+      },
+      {
+        uri: "/projects/retwitter",
+        fragmentsUri: "/fragment/projects_retwitter",
+        contentTemplate: "projects_retwitter"
       }
     ];
     static routeUri(uri) {
       for (const route of this.ROUTES) {
-        if (uri == route.uri) {
+        if (uri == route.uri || (uri + "/index").replace(/\/+/g, "/") == route.uri) {
           return route;
         }
       }
@@ -161,54 +176,131 @@
     }
   }
 
-  // js/client/PageManager.ts
-  var PageManager = class {
-    async loadInitialPage() {
-      await this.loadPageContainer();
-      try {
-        updateNavBarSelectedItem();
-      } catch (e) {
-        console.error(e);
-      }
-      await this.loadPageFragmentsForUrl(window.location.pathname);
-      const initialLoadTime = window["leymonaide"]?.cfg_?.INITIAL_LOAD_TIME ?? null;
-      if (initialLoadTime && initialLoadTime + 250 > Date.now()) {
-        document.querySelector("#body-container")?.classList.add("no-transition");
-      }
-      document.body.classList.remove("initial-loading" /* InitialLoading */);
+  // js/client/page_manager.ts
+  async function loadInitialPage() {
+    await loadPageContainer();
+    updateNavBarSelectedItem();
+    await loadPageFragmentsForUrl(window.location.pathname);
+    const initialLoadTime = window["leymonaide"]?.cfg_?.INITIAL_LOAD_TIME ?? null;
+    if (initialLoadTime && initialLoadTime + 250 > Date.now()) {
+      document.querySelector("#body-container")?.classList.add("no-transition");
     }
-    async loadPageContainer() {
-      const fragmentsDocument = await fetch("/fragment/body_container");
-      const text = await fragmentsDocument.text();
-      const contentElement = document.querySelector("#body-container");
-      contentElement.innerHTML = text;
-      await sitewideLanguageLoaded();
-      decorateAllElements();
+    document.body.classList.remove("initial-loading" /* InitialLoading */);
+  }
+  async function loadPageContainer() {
+    const fragmentsDocument = await fetch("/fragment/body_container");
+    const text = await fragmentsDocument.text();
+    const contentElement = document.querySelector("#body-container");
+    contentElement.innerHTML = text;
+    await sitewideLanguageLoaded();
+    decorateAllElements();
+  }
+  async function loadPageFragmentsForUrl(url) {
+    const route = Router.routeUri(url);
+    if (!route) {
+      throw new Error(`The requested page for URL "${url}" could not be routed`);
     }
-    async loadPageFragmentsForUrl(url) {
-      const route = Router.routeUri(url);
-      if (!route) {
-        return;
-      }
-      const fragmentsDocument = await fetch(route.fragmentsUri);
-      const text = await fragmentsDocument.text();
-      const contentElement = document.querySelector("#content");
-      contentElement.innerHTML = text;
-      await sitewideLanguageLoaded();
-      decorateAllElements();
+    const fragmentsDocument = await fetch(route.fragmentsUri);
+    const text = await fragmentsDocument.text();
+    const contentElement = document.querySelector("#content");
+    contentElement.innerHTML = text;
+    await sitewideLanguageLoaded();
+    decorateAllElements();
+  }
+  async function navigateToPage(url) {
+    const route = Router.routeUri(url);
+    if (!route) {
+      window.location.href = url;
+      return;
+    }
+    document.body.classList.add("loading-ajax" /* LoadingAjax */);
+    try {
+      await loadPageFragmentsForUrl(url);
+      window.history.pushState(null, null, url);
+      updateNavBarSelectedItem();
+      document.body.classList.remove("loading-ajax" /* LoadingAjax */);
+    } catch (e) {
+      window.location.href = url;
+      return;
+    }
+  }
+
+  // js/client/event_manager.ts
+  var EventWrapper = class {
+    target;
+    name;
+    cb;
+    constructor(target, name, cb) {
+      this.target = target;
+      this.name = name;
+      this.cb = cb;
+    }
+    remove() {
+      removeEvent(this.target, this.name, this.cb);
     }
   };
+  function init2() {
+    addEvent(document, "click", handleClickAnchorOrChild);
+  }
+  function handleClickAnchorOrChild(e) {
+    let activeElement = e.target;
+    while (null != activeElement) {
+      let classes;
+      if (activeElement.classList) {
+        classes = Array.from(activeElement.classList);
+      } else {
+        classes = activeElement.className.split(" ");
+      }
+      for (const className of classes) {
+        if ("event-no-propagate" == className) {
+          return;
+        } else if ("no-ajax" == className && "A" == activeElement.tagName) {
+          return;
+        }
+      }
+      if ("A" == activeElement.tagName) {
+        const anchor = activeElement;
+        const linkHref = new URL(anchor.href, window.location.origin);
+        const isLinkRelative = linkHref.origin == window.location.origin;
+        if (isLinkRelative) {
+          try {
+            navigateToPage(linkHref.pathname);
+            e.preventDefault();
+          } catch (e2) {
+          }
+        }
+        return;
+      }
+      activeElement = activeElement.parentElement;
+    }
+  }
+  function addEvent(target, name, cb) {
+    if (target["addEventListener"]) {
+      target.addEventListener(name, cb);
+    } else if (target["attachEvent"]) {
+      target["attachEvent"]("on" + name, cb);
+    }
+    return new EventWrapper(target, name, cb);
+  }
+  function removeEvent(target, name, cb) {
+    if (target.removeEventListener) {
+      target.removeEventListener(name, cb);
+    } else if (target["detachEvent"]) {
+      target["detachEvent"]("on" + name, cb);
+    }
+  }
 
   // js/client/main.ts
   (function() {
     init();
+    init2();
     sitewideLanguageLoaded().then(function() {
       decorateAllElements();
     });
-    const g_pageManager = new PageManager();
     try {
-      g_pageManager.loadInitialPage();
+      loadInitialPage();
     } catch (e) {
+      document.body.classList.add("sitewide-error");
       document.body.textContent = e;
     }
   })();
