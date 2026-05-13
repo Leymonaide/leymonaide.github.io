@@ -1,0 +1,15 @@
+sitewide_nav:
+  home: Home
+  projects: Projects
+  blog: Blog
+  friends: Friends
+
+home_intro:
+  hello: Hello!
+  who: My name is Leymonaide. I like computers.
+  what: |
+    This is my website where I aggregate my projects and write about
+    topics which interest me. You know, the usual.
+
+mini_profile:
+  see_more_about_me: See more about me

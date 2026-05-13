@@ -12,7 +12,8 @@
     "sass": "^1.99.0",
     "svgo": "^4.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@types/gulp": "^4.0.18",

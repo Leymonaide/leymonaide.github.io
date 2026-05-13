@@ -37,7 +37,7 @@
         <link rel="stylesheet" href="/static/css/style.css?v={{ app.appResourceVersion }}">
 
         {# Initialize page JS configuration. #}
-        <script>{{ "window.leymonaide={cfg_:{}" ~ "};" }}</script>
+        <script>{{ "window.leymonaide={cfg_:{INITIAL_LOAD_TIME:Date.now()}" ~ "};" }}</script>
     </head>
     <body class="initial-loading">
         {# The theme should be loaded as soon as the body class exists. #}
@@ -45,7 +45,9 @@
         <div class="initial-loading-container">
             <div class="spinner"></div>
         </div>
-        <div id="body-container">{# The body container is loaded at runtime via AJAX. #}</div>
+        <div id="body-container">
+            {# The body container is loaded at runtime via AJAX. #}
+        </div>
         {% include "noscript_container.njk" %}
         <script type="text/javascript" src="/static/js/core.js?v={{ app.appResourceVersion }}"></script>
     </body>

@@ -15,12 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+html {
+  --topbar-textured-bg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Cfilter%20id%3D%22a%22%3E%3CfeTurbulence%20baseFrequency%3D%22.06%22%20numOctaves%3D%226%22%20stitchTiles%3D%22stitch%22%20type%3D%22fractalNoise%22%2F%3E%3CfeColorMatrix%20type%3D%22saturate%22%20values%3D%220%22%2F%3E%3C%2Ffilter%3E%3Cdefs%3E%3Cpattern%20id%3D%22b%22%20width%3D%221500%22%20height%3D%22100%25%22%20patternUnits%3D%22userSpaceOnUse%22%3E%3Crect%20width%3D%221500%22%20height%3D%22100%25%22%20filter%3D%22url(%23a)%22%20opacity%3D%226%25%22%2F%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22url(%23b)%22%2F%3E%3C%2Fsvg%3E");
+  --content-wash-bg-color: rgba(255, 255, 255, 0.4);
+  --body-bg-color: #EDE8C0;
+  --page-width: 865px;
+  --module-bg-color-primary: hsl(0, 0%, 98%);
+  --module-bg-color-secondary: hsl(0, 0%, 96%);
+  --module-bg-border: hsl(0, 0%, 91%);
+  --module-prominent-text: hsl(0, 0%, 20%);
+  --module-light-text: hsl(0, 0%, 60%);
+}
+
 .initial-loading-container {
   z-index: 999999;
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #EDE8C0;
+  background-color: var(--body-bg-color);
   display: none;
 }
 
@@ -28,11 +40,14 @@
   opacity: 100%;
   transition: opacity 200ms;
 }
+#body-container.no-transition {
+  transition: none;
+}
 
 body {
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
-  background-color: #EDE8C0;
+  background-color: var(--body-bg-color);
 }
 body.initial-loading .initial-loading-container {
   display: block;
@@ -44,17 +59,6 @@ body.initial-loading #body-container {
 ul {
   margin: 0;
   list-style: none;
-}
-
-html {
-  --topbar-textured-bg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%3E%3Cfilter%20id%3D%22a%22%3E%3CfeTurbulence%20baseFrequency%3D%22.06%22%20numOctaves%3D%226%22%20stitchTiles%3D%22stitch%22%20type%3D%22fractalNoise%22%2F%3E%3CfeColorMatrix%20type%3D%22saturate%22%20values%3D%220%22%2F%3E%3C%2Ffilter%3E%3Cdefs%3E%3Cpattern%20id%3D%22b%22%20width%3D%221500%22%20height%3D%22100%25%22%20patternUnits%3D%22userSpaceOnUse%22%3E%3Crect%20width%3D%221500%22%20height%3D%22100%25%22%20filter%3D%22url(%23a)%22%20opacity%3D%226%25%22%2F%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22url(%23b)%22%2F%3E%3C%2Fsvg%3E");
-  --content-wash-bg-color: rgba(255, 255, 255, 0.4);
-  --page-width: 865px;
-  --module-bg-color-primary: hsl(0, 0%, 98%);
-  --module-bg-color-secondary: hsl(0, 0%, 96%);
-  --module-bg-border: hsl(0, 0%, 91%);
-  --module-prominent-text: hsl(0, 0%, 20%);
-  --module-light-text: hsl(0, 0%, 60%);
 }
 
 .topbar-style {
@@ -102,10 +106,24 @@ html {
   padding: calc(var(--content-padding) + 40px) var(--content-padding) var(--content-padding);
   margin: 0 auto;
 }
-#content .col1 {
-  width: 302px;
+
+.content-container .column {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  margin-right: var(--content-padding);
+}
+.content-container .column:last-of-type {
+  margin-right: unset;
+}
+.content-container .column.two-thirds {
+  width: 67%;
+}
+.content-container .column.one-third {
+  width: 33%;
+}
+.content-container.column-layout {
+  display: flex;
 }
 
 .module {
@@ -116,6 +134,10 @@ html {
   border-radius: 6px;
   background-clip: padding-box;
   overflow: hidden;
+}
+.module.basic-module {
+  background: var(--module-bg-color-primary);
+  padding: 12px;
 }
 
 .mini-profile {

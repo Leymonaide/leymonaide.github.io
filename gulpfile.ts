@@ -29,6 +29,7 @@ import dartSassCompiler from "sass";
 import { ProcessCss } from "./js/build/process_css.ts";
 import gulp_esbuild from "gulp-esbuild";
 import { Transform } from "stream";
+import * as Yaml from "yaml";
 
 const gulpSassInstance = gulpSassBuilder(dartSassCompiler);
 
@@ -41,9 +42,42 @@ const gulpSassInstance = gulpSassBuilder(dartSassCompiler);
 let g_fastBuild: boolean = null;
 
 /**
+ * This is used for development purposes to skip very slow operations, such as
+ * minification.
+ */
+let g_superFastBuild: boolean = true;
+
+/**
  * A map of inlined JS file names to their minified code.
  */
 const g_inlineJs: Record<string, string> = {};
+
+function doNothingTransform(): Transform
+{
+    return through2.obj(async function (
+        file: VinylFile,
+        encoding: BufferEncoding,
+        callback: through2.TransformCallback,
+    )
+    {
+        this.push(file);
+        callback();
+    });
+}
+
+function logTransform(msg: string): Transform
+{
+    return through2.obj(async function (
+        file: VinylFile,
+        encoding: BufferEncoding,
+        callback: through2.TransformCallback,
+    )
+    {
+        console.log(msg);
+        this.push(file);
+        callback();
+    });
+}
 
 class CacheManager
 {
@@ -151,8 +185,10 @@ class CacheManager
 
 function buildInlineJs(): NodeJS.WritableStream
 {
+    console.log(`Using super fast build: ${g_superFastBuild ? "true" : "false"}`);
     return pipeline(
         gulp.src("js/inline/*.ts"),
+        logTransform("Grabbed files"),
         CacheManager.readFromCache(
             "inline_js",
             (s) => s.replace(".ts", ".js"),
@@ -161,19 +197,23 @@ function buildInlineJs(): NodeJS.WritableStream
                 g_inlineJs[scriptName] = await fh.readFile({encoding: "utf8"});
             },
         ),
-        gulp_ts({
+        logTransform("Read from cache"),
+        g_superFastBuild ? doNothingTransform() : gulp_ts({
             rootDir: process.cwd(),
             module: "es2015",
             moduleResolution: "node",
         }),
-        gulp_uglify(),
-        CacheManager.writeToCache(
+        logTransform("Ran gulp_ts"),
+        g_superFastBuild ? doNothingTransform() : gulp_uglify(),
+        logTransform("Ran gulp_uglify (or nothing)"),
+        g_superFastBuild ? doNothingTransform() : CacheManager.writeToCache(
             "inline_js",
             async (file, fh) => {
                 const scriptName = file.basename.split(".")[0];
                 g_inlineJs[scriptName] = file.contents!.toString();
             },
         ),
+        logTransform("Wrote to cache (and done)"),
     )
 }
 
@@ -187,7 +227,7 @@ function buildJsScripts(): NodeJS.WritableStream
             "client_js",
             (s) => outputBundleName,
         ),
-        gulp_ts({
+        g_superFastBuild ? doNothingTransform() : gulp_ts({
             rootDir: process.cwd(),
             module: "es2015",
             moduleResolution: "node",
@@ -196,7 +236,7 @@ function buildJsScripts(): NodeJS.WritableStream
             outfile: outputBundleName,
             bundle: true,
         }),
-        CacheManager.writeToCache(
+        g_superFastBuild ? doNothingTransform() : CacheManager.writeToCache(
             "client_js",
         ),
         gulp.dest("output/static/js")
@@ -234,6 +274,37 @@ function buildCss(): NodeJS.WritableStream
     );
 }
 
+function buildLanguages(): NodeJS.WritableStream
+{
+    return pipeline(
+        gulp.src("i18n/*.yaml"),
+        through2.obj(async function (
+            file: VinylFile,
+            encoding: BufferEncoding,
+            callback: through2.TransformCallback,
+        )
+        {
+            try
+            {
+                const fileContents = file.contents.toString();
+                const jsObj = Yaml.parse(fileContents);
+                file.extname = ".json";
+                file.contents = Buffer.from(JSON.stringify(jsObj));
+                this.push(file);
+            }
+            catch (e)
+            {
+                this.emit("error", e);
+            }
+            finally
+            {
+                callback();
+            }
+        }),
+        gulp.dest("output/static/i18n")
+    );
+}
+
 async function buildPages(): Promise<void>
 {
     const pageBuilder = new PageBuilder(g_inlineJs);
@@ -246,6 +317,7 @@ export function pagesTask(): TaskFunction
         // Inline JS must be built before pages.
         buildInlineJs,
         buildPages,
+        buildLanguages,
     );
 }
 
@@ -259,6 +331,11 @@ function jsTask(): TaskFunction
     return gulp.series(buildJsScripts);
 }
 
+function languagesTask(): TaskFunction
+{
+    return gulp.series(buildLanguages);
+}
+
 function slowTask(): TaskFunction
 {
     g_fastBuild = false;
@@ -267,6 +344,7 @@ function slowTask(): TaskFunction
 
 function build(): TaskFunction
 {
+    g_superFastBuild = true;
     if (null === g_fastBuild)
     {
         g_fastBuild = true;
@@ -282,3 +360,4 @@ export default build();
 export const css = cssTask();
 export const js = jsTask();
 export const slow = slowTask();
+export const languages = languagesTask();

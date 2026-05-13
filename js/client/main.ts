@@ -17,10 +17,15 @@
  */
 
 import PageManager from "./PageManager";
-import loadSitewideLanguage from "./load_language";
+import * as localization from "./localization";
 
 (function(){
-    loadSitewideLanguage();
+    localization.init();
+
+    localization.sitewideLanguageLoaded().then(function()
+    {
+        localization.decorateAllElements();
+    });
 
     const g_pageManager = new PageManager();
     try

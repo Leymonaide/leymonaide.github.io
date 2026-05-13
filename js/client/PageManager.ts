@@ -19,6 +19,7 @@
 import { BodyClasses } from "../interface/BodyClasses";
 import { Router } from "../shared/Router";
 import * as navigation from "./navigation";
+import * as localization from "./localization";
 
 export default class PageManager
 {
@@ -39,6 +40,18 @@ export default class PageManager
         }
         
         await this.loadPageFragmentsForUrl(window.location.pathname);
+
+        // Remove the initial loading class. If more than 250 milliseconds have
+        // ellapsed since the page started loading, then a transition animation
+        // from the loading screen will be presented to the user. Otherwise, the
+        // transition will be disabled.
+        const initialLoadTime: number|null =
+            window["leymonaide"]?.cfg_?.INITIAL_LOAD_TIME ?? null;
+        if (initialLoadTime && initialLoadTime + 250 > Date.now())
+        {
+            document.querySelector("#body-container")
+                ?.classList.add("no-transition");
+        }
         document.body.classList.remove(BodyClasses.InitialLoading);
     }
 
@@ -50,6 +63,9 @@ export default class PageManager
         const contentElement = document.querySelector("#body-container");
         
         contentElement.innerHTML = text;
+
+        await localization.sitewideLanguageLoaded();
+        localization.decorateAllElements();
     }
 
     public async loadPageFragmentsForUrl(url: string): Promise<void>
@@ -70,5 +86,8 @@ export default class PageManager
         // CONSIDER: Using DOM parser and inserting nodes so that inserting
         // scripts just works.
         contentElement.innerHTML = text;
+
+        await localization.sitewideLanguageLoaded();
+        localization.decorateAllElements();
     }
 }

@@ -16,6 +16,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export type LanguageMessage = {
+    [key: string]: string|LanguageMessage;
+};
+
 /**
  * Initial runtime configuration for the website.
  * 
@@ -23,5 +27,21 @@
  */
 export interface SiteConfig
 {
+    /**
+     * The current language.
+     */
     LANGUAGE: string;
+
+    /**
+     * Language messages for all loaded languages.
+     * 
+     * The structure is a set of localized messages for each message ID, each
+     * mapped to the ID of the language.
+     */
+    MSG: Record<string, LanguageMessage>|null;
+
+    /**
+     * The timestamp in milliseconds at the time the page was initially loaded.
+     */
+    INITIAL_LOAD_TIME: number;
 }

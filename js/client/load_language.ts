@@ -20,20 +20,9 @@
 // document.
 
 import { SiteConfig } from "../interface/SiteConfig";
+import { LANGUAGE_ALIASES, APP_SUPPORTED_LANGUAGES } from "./localization";
 
-const APP_SUPPORTED_LANGUAGES: string[] = [
-    "en",
-    "ja",
-    "es",
-    "pt",
-];
-
-const LANGUAGE_ALIASES: Record<string, string> = {
-    "en-US": "en",
-    "en-GB": "en",
-};
-
-export default function loadSitewideLanguage(): void
+export default function loadSitewideLanguage(signalLoaded: (value:void)=>void): void
 {
     const siteConfig: SiteConfig = window["leymonaide"]["cfg_"];
 
@@ -56,4 +45,13 @@ export default function loadSitewideLanguage(): void
     }
 
     document.documentElement.setAttribute("lang", siteConfig.LANGUAGE);
+
+    const curLang = siteConfig.LANGUAGE;
+    fetch("/static/i18n/" + curLang + ".json")
+        .then(async function(response)
+        {
+            siteConfig.MSG = siteConfig.MSG || {};
+            siteConfig.MSG[curLang] = await response.json();
+            signalLoaded();
+        });
 }

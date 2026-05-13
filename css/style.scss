@@ -18,13 +18,28 @@
 
 @use "sass:color";
 
+$topbar-height: 40px;
+
+html
+{
+    --topbar-textured-bg: embed-svg("svg/topbar_bg.svg");
+    --content-wash-bg-color: rgba(255, 255, 255, 0.4);
+    --body-bg-color: #EDE8C0; // I think this is a cute color for now.
+    --page-width: 865px;
+    --module-bg-color-primary: hsl(0, 0%, 98%);
+    --module-bg-color-secondary: hsl(0, 0%, 96%);
+    --module-bg-border: hsl(0, 0%, 91%);
+    --module-prominent-text: hsl(0, 0%, 20%);
+    --module-light-text: hsl(0, 0%, 60%);
+}
+
 .initial-loading-container
 {
     z-index: 999999;
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: #EDE8C0;
+    background-color: var(--body-bg-color);
     display: none;
 }
 
@@ -32,15 +47,18 @@
 {
     opacity: 100%;
     transition: opacity 200ms;
+
+    &.no-transition
+    {
+        transition: none;
+    }
 }
 
 body
 {
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
-
-    // I think this is a cute color for now.
-    background-color: #EDE8C0;
+    background-color: var(--body-bg-color);
 
     &.initial-loading
     {
@@ -60,20 +78,6 @@ ul
 {
     margin: 0;
     list-style: none;
-}
-
-$topbar-height: 40px;
-
-html
-{
-    --topbar-textured-bg: embed-svg("svg/topbar_bg.svg");
-    --content-wash-bg-color: rgba(255, 255, 255, 0.4);
-    --page-width: 865px;
-    --module-bg-color-primary: hsl(0, 0%, 98%);
-    --module-bg-color-secondary: hsl(0, 0%, 96%);
-    --module-bg-border: hsl(0, 0%, 91%);
-    --module-prominent-text: hsl(0, 0%, 20%);
-    --module-light-text: hsl(0, 0%, 60%);
 }
 
 .topbar-style
@@ -145,12 +149,37 @@ html
         var(--content-padding) 
         var(--content-padding);
     margin: 0 auto;
+}
 
-    .col1
+.content-container
+{
+    .column
     {
-        width: 302px; // TODO: Make this dynamic.
         display: flex;
         flex-direction: column;
+        width: 100%;
+        margin-right: var(--content-padding);
+
+        &:last-of-type
+        {
+            margin-right: unset;
+        }
+
+        // Overrides
+        &.two-thirds
+        {
+            width: 67%;
+        }
+
+        &.one-third
+        {
+            width: 33%;
+        }
+    }
+
+    &.column-layout
+    {
+        display: flex;
     }
 }
 
@@ -168,6 +197,12 @@ html
     // border radius won't have to be duplicated for each possible child
     // element.
     overflow: hidden;
+
+    &.basic-module
+    {
+        background: var(--module-bg-color-primary);
+        padding: 12px;
+    }
 }
 
 .mini-profile

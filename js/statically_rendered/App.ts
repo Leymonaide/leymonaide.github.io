@@ -65,9 +65,10 @@ export class App
         this.inlinedJs = inlinedJs;
 
         this.navigation = new Navigation();
-        this.navigation.insertItem(new NavigationItem("Home", "home", "/"));
-        this.navigation.insertItem(new NavigationItem("Another tab", "another-tab", "/abc"));
-        this.navigation.insertItem(new NavigationItem("Yet another tab", "yet-another-tab", "/def"));
+        this.navigation.insertItem(new NavigationItem("sitewide_nav.home", "home", "/"));
+        this.navigation.insertItem(new NavigationItem("sitewide_nav.projects", "projects", "/projects"));
+        this.navigation.insertItem(new NavigationItem("sitewide_nav.blog", "blog", "/blog"));
+        this.navigation.insertItem(new NavigationItem("sitewide_nav.friends", "friends", "/friends"));
 
         this.navigation.selectItemFromBaseName(this._pageBaseName);
     }

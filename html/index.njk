@@ -1,6 +1,6 @@
 {#
  * This file is part of Leymonaide's homepage.
- * Copyright (c) 2025 Leymonaide.
+ * Copyright (c) 2025-2026 Leymonaide.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -18,17 +18,26 @@
 
 {# Template for index page. #}
 
-<div class="col1">
-    <div class="module mini-profile">
-        <div class="mini-profile-content">
-            <img class="avatar size32" src="//avatars.githubusercontent.com/u/230778645">
-            <div>
-                <b class="name">Leymonaide</b>
-                <div class="about-link">See more about me</div>
-            </div>
+<div class="content-container column-layout">
+    <div class="column two-thirds">
+        <div class="module basic-module">
+            <h1 data-string="home_intro.hello"></h1>
+            <p data-string="home_intro.who"></p>
+            <p data-string="home_intro.what"></p>
         </div>
-        <div class="socials">
-            Text
+    </div>
+    <div class="column one-third">
+        <div class="module mini-profile">
+            <div class="mini-profile-content">
+                <img class="avatar size32" src="//avatars.githubusercontent.com/u/230778645">
+                <div>
+                    <b class="name">Leymonaide</b>
+                    <div class="about-link" data-string="mini_profile.see_more_about_me"></div>
+                </div>
+            </div>
+            <div class="socials">
+                Text
+            </div>
         </div>
     </div>
 </div>
