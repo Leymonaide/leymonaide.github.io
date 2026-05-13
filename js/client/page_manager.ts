@@ -81,8 +81,13 @@ export async function loadPageFragmentsForUrl(url: string): Promise<void>
     localization.decorateAllElements();
 }
 
-export async function navigateToPage(url: string): Promise<void>
+export async function navigateToPage(
+    url: string,
+    navigationSourceElement: HTMLElement,
+): Promise<void>
 {
+    navigationSourceElement.classList.add("lockup-target");
+
     const route = Router.routeUri(url);
 
     if (!route)
@@ -101,6 +106,7 @@ export async function navigateToPage(url: string): Promise<void>
         navigation.updateNavBarSelectedItem();
 
         document.body.classList.remove(BodyClasses.LoadingAjax);
+        navigationSourceElement.classList.remove("lockup-target");
     }
     catch (e)
     {

@@ -89,7 +89,7 @@ ul {
   color: rgb(191.25, 191.25, 191.25);
   text-shadow: 0 -1px -1px rgba(0, 0, 0, 0.75);
 }
-.topbar-style li a:hover, .topbar-style li.active a {
+.topbar-style li a:hover, .topbar-style li.active a, .topbar-style li a.lockup-target {
   color: #fff;
 }
 .topbar-style li.active a {

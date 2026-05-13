@@ -91,7 +91,7 @@ function handleClickAnchorOrChild(e: Event): void
                 // Prevent the browser from doing manual navigation.
                 try
                 {
-                    pageManager.navigateToPage(linkHref.pathname);
+                    pageManager.navigateToPage(linkHref.pathname, anchor);
                     e.preventDefault();
                 }
                 catch (e)

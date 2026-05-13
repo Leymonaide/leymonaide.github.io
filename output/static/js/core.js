@@ -207,7 +207,8 @@
     await sitewideLanguageLoaded();
     decorateAllElements();
   }
-  async function navigateToPage(url) {
+  async function navigateToPage(url, navigationSourceElement) {
+    navigationSourceElement.classList.add("lockup-target");
     const route = Router.routeUri(url);
     if (!route) {
       window.location.href = url;
@@ -219,6 +220,7 @@
       window.history.pushState(null, null, url);
       updateNavBarSelectedItem();
       document.body.classList.remove("loading-ajax" /* LoadingAjax */);
+      navigationSourceElement.classList.remove("lockup-target");
     } catch (e) {
       window.location.href = url;
       return;
@@ -264,7 +266,7 @@
         const isLinkRelative = linkHref.origin == window.location.origin;
         if (isLinkRelative) {
           try {
-            navigateToPage(linkHref.pathname);
+            navigateToPage(linkHref.pathname, anchor);
             e.preventDefault();
           } catch (e2) {
           }
