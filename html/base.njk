@@ -16,9 +16,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 #}
 <!DOCTYPE html>
-{# The lang attribute on the root element is inserted with the JS runtime. #}
 {% import "macros.njk" as macros %}
-<html data-sitewide-resource-ver="{{ app.appResourceVersion }}">
+<html
+    data-sitewide-resource-ver="{{ app.appResourceVersion }}"
+    {% if app.staticRender %}
+        lang="{{ app.language }}"
+    {# Otherwise, the lang attribute on the root element is inserted with the JS
+       runtime. #}
+    {% endif %}>
     <head>
         <meta charset="utf-8">
 
@@ -39,16 +44,23 @@
         {# Initialize page JS configuration. #}
         <script>{{ "window.leymonaide={cfg_:{INITIAL_LOAD_TIME:Date.now()}" ~ "};" }}</script>
     </head>
-    <body class="initial-loading">
+    <body class="{{ 'statically-rendered' if app.staticRender else 'initial-loading' }}">
         {# The theme should be loaded as soon as the body class exists. #}
         {{ macros.inline_js("load_theme") }}
-        <div class="initial-loading-container">
-            <div class="spinner"></div>
-        </div>
+        {% if not app.staticRender %}
+            <div class="initial-loading-container">
+                <div class="spinner"></div>
+            </div>
+        {% endif %}
         <div id="body-container">
-            {# The body container is loaded at runtime via AJAX. #}
+            {% if app.staticRender %}
+                {% include "body_container_fragment.njk" %}
+            {# Otherwise, the body container is loaded at runtime via AJAX. #}
+            {% endif %}
         </div>
-        {% include "noscript_container.njk" %}
+        {% if not app.staticRender %}
+            {% include "noscript_container.njk" %}
+        {% endif %}
         <script type="text/javascript" src="/static/js/core.js?v={{ app.appResourceVersion }}"></script>
     </body>
 </html>

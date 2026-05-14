@@ -32,11 +32,18 @@ html
     --content-wash-bg-color: rgba(255, 255, 255, 0.4);
     --body-bg-color: #EDE8C0; // I think this is a cute color for now.
     --page-width: 865px;
+    --primary-font-family: Arial, Helvetica, sans-serif;
     --module-bg-color-primary: hsl(0, 0%, 98%);
     --module-bg-color-secondary: hsl(0, 0%, 96%);
     --module-bg-border: hsl(0, 0%, 91%);
     --module-prominent-text: hsl(0, 0%, 20%);
     --module-light-text: hsl(0, 0%, 60%);
+    --anchor-color: hsl(196, 100%, 35%);
+}
+
+.clearfix
+{
+    @include macros.clearfix;
 }
 
 .thin-layout
@@ -58,6 +65,22 @@ html
     --module-bg-border: hsl(47.1, 12.3%, 13.0%);
     --module-prominent-text: hsl(0, 0%, 100%);
     --module-light-text: hsl(0, 0%, 75%);
+    --anchor-color: hsl(196.1, 76.1%, 72.2%);
+}
+
+a, a:hover, a:focus
+{
+    color: var(--anchor-color);
+}
+
+a
+{
+    text-decoration: none;
+
+    &:hover, &:focus
+    {
+        text-decoration: underline;
+    }
 }
 
 .initial-loading-container
@@ -83,7 +106,7 @@ html
 
 body
 {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--primary-font-family);
     margin: 0;
     background-color: var(--body-bg-color);
 
@@ -123,20 +146,37 @@ ul
 
     box-shadow: 0 2px 3px rgba(0, 0, 0, .25);
 
+    .container
+    {
+        width: var(--page-width);
+        margin: 0 auto;
+    }
+
     ul
     {
         padding: 0;
-        width: var(--page-width);
-        margin: 0 auto;
         text-align: center;
+        float: left;
+
+        &.right
+        {
+            float: right;
+        }
     }
 
     li
     {
         float: left;
 
-        a
+        a, button
         {
+            // These styles are implicitly true by default for anchors, but need
+            // to be manually stated for buttons.
+            background: none;
+            border: none;
+            font-family: var(--primary-font-family);
+            height: 100%;
+
             display: block;
             height: 12px;
             padding: 13px 12px 15px;
@@ -146,14 +186,31 @@ ul
             line-height: 1;
             color: color.scale($topbar-base-text-color, $lightness: -25%);
             text-shadow: 0 -1px -1px rgba(0, 0, 0, .75);
+
+            .caret
+            {
+                @include macros.caret(down, 8px, 
+                    color.scale($topbar-base-text-color, $lightness: -25%));
+                margin-top: 4px;
+                margin-left: 4px;
+                box-shadow: 0 -1px 0 rgba(0, 0, 0, .75);
+            }
         }
 
-        a:hover, &.active a, a.lockup-target
+        a:hover, &.active a, a.lockup-target,
+        button:hover, &.active button
         {
+            text-decoration: none;
             color: $topbar-base-text-color;
+
+            .caret
+            {
+                border-top-color: $topbar-base-text-color;
+            }
         }
 
-        &.active a
+        &.active a,
+        &.active button
         {
             background: var(--topbar-textured-bg),
                 linear-gradient(to bottom, 
@@ -178,6 +235,22 @@ ul
     margin: 0 auto;
 
     @include macros.layout-transition;
+    
+    @at-root .thin-layout &
+    {
+        margin-right: unset;
+
+        &.two-thirds, &.one-third
+        {
+            width: 100%;
+        }
+
+        &:first-of-type .module
+        {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+    }
 }
 
 .thin-layout #content
@@ -189,58 +262,39 @@ ul
     padding: $topbar-height 0;
 }
 
-.content-container
+.column
 {
-    .column
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-right: var(--content-padding);
+
+    &:last-of-type
     {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        margin-right: var(--content-padding);
-
-        &:last-of-type
-        {
-            margin-right: unset;
-        }
-
-        // Overrides
-        &.two-thirds
-        {
-            width: 67%;
-        }
-
-        &.one-third
-        {
-            width: 33%;
-        }
-
-        @at-root .thin-layout &
-        {
-            margin-right: unset;
-
-            &.two-thirds, &.one-third
-            {
-                width: 100%;
-            }
-
-            &:first-of-type .module
-            {
-                border-top-left-radius: 0;
-                border-top-right-radius: 0;
-            }
-        }
+        margin-right: unset;
     }
 
-    &.column-layout
+    // Overrides
+    &.two-thirds
     {
-        display: flex;
+        width: 67%;
+    }
 
-        @at-root .thin-layout &
-        {
-            // Contradictorily to its name, this actually makes each column's
-            // content be displayed on a new row.
-            flex-direction: column;
-        }
+    &.one-third
+    {
+        width: 33%;
+    }
+}
+
+.column-layout
+{
+    display: flex;
+
+    @at-root .thin-layout &
+    {
+        // Contradictorily to its name, this actually makes each column's
+        // content be displayed on a new row.
+        flex-direction: column;
     }
 }
 
@@ -310,6 +364,20 @@ ul
         background: var(--module-bg-color-secondary);
         padding: 12px;
         line-height: 16px;
+    }
+}
+
+.mini-profile-link-wrapper
+{
+    &:hover, &:focus
+    {
+        text-decoration: none;
+
+        .about-link
+        {
+            color: var(--anchor-color);
+            text-decoration: underline;
+        }
     }
 }
 

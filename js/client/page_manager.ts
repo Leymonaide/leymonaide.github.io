@@ -21,6 +21,8 @@ import { Router } from "../shared/Router";
 import * as navigation from "./navigation";
 import * as localization from "./localization";
 
+const g_pageCache: Record<string, string> = {};
+
 export async function loadInitialPage(): Promise<void>
 {
     await loadPageContainer();
@@ -68,8 +70,7 @@ export async function loadPageFragmentsForUrl(url: string): Promise<void>
         throw new Error(`The requested page for URL "${url}" could not be routed`);
     }
 
-    const fragmentsDocument = await fetch(route.fragmentsUri);
-    const text = await fragmentsDocument.text();
+    const text = await requestPageFragments(route.fragmentsUri);
 
     const contentElement = document.querySelector("#content");
     
@@ -120,4 +121,15 @@ export async function navigateToPage(
         window.location.href = url;
         return;
     }
+}
+
+async function requestPageFragments(fragmentsUri: string): Promise<string>
+{
+    if (g_pageCache[fragmentsUri])
+    {
+        return g_pageCache[fragmentsUri];
+    }
+
+    const response = await fetch(fragmentsUri);
+    return await response.text();
 }

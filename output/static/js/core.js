@@ -177,6 +177,7 @@
   }
 
   // js/client/page_manager.ts
+  var g_pageCache = {};
   async function loadInitialPage() {
     await loadPageContainer();
     updateNavBarSelectedItem();
@@ -200,8 +201,7 @@
     if (!route) {
       throw new Error(`The requested page for URL "${url}" could not be routed`);
     }
-    const fragmentsDocument = await fetch(route.fragmentsUri);
-    const text = await fragmentsDocument.text();
+    const text = await requestPageFragments(route.fragmentsUri);
     const contentElement = document.querySelector("#content");
     contentElement.innerHTML = text;
     await sitewideLanguageLoaded();
@@ -227,6 +227,13 @@
       window.location.href = url;
       return;
     }
+  }
+  async function requestPageFragments(fragmentsUri) {
+    if (g_pageCache[fragmentsUri]) {
+      return g_pageCache[fragmentsUri];
+    }
+    const response = await fetch(fragmentsUri);
+    return await response.text();
   }
 
   // js/client/event_manager.ts
