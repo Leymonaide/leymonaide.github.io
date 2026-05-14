@@ -43,4 +43,9 @@ export const enum BodyClasses
      * Enables high contrast appearance for accessibility.
      */
     HighContrast = "high-contrast",
+    
+    /**
+     * Thin layout class (primarily for mobile phones)
+     */
+    ThinLayout = "thin-layout",
 }

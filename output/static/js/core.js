@@ -208,12 +208,12 @@
     decorateAllElements();
   }
   async function navigateToPage(url, navigationSourceElement) {
-    navigationSourceElement.classList.add("lockup-target");
     const route = Router.routeUri(url);
     if (!route) {
       window.location.href = url;
       return;
     }
+    navigationSourceElement.classList.add("lockup-target");
     document.body.classList.add("loading-ajax" /* LoadingAjax */);
     try {
       await loadPageFragmentsForUrl(url);
@@ -222,6 +222,8 @@
       document.body.classList.remove("loading-ajax" /* LoadingAjax */);
       navigationSourceElement.classList.remove("lockup-target");
     } catch (e) {
+      document.body.classList.remove("loading-ajax" /* LoadingAjax */);
+      navigationSourceElement.classList.remove("lockup-target");
       window.location.href = url;
       return;
     }
@@ -292,10 +294,23 @@
     }
   }
 
+  // js/client/layout_manager.ts
+  function init3() {
+    addEvent(window, "resize", onResizeWindow);
+  }
+  function onResizeWindow(e) {
+    if (window.innerWidth < 720) {
+      document.body.classList.add("thin-layout" /* ThinLayout */);
+    } else {
+      document.body.classList.remove("thin-layout" /* ThinLayout */);
+    }
+  }
+
   // js/client/main.ts
   (function() {
     init();
     init2();
+    init3();
     sitewideLanguageLoaded().then(function() {
       decorateAllElements();
     });

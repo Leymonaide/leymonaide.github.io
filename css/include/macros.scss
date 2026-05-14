@@ -1,0 +1,10 @@
+@mixin layout-transition()
+{
+    transition: all ease-in-out;
+    transition-duration: 250ms;
+
+    @media (prefers-reduced-motion)
+    {
+        transition: none;
+    }
+}

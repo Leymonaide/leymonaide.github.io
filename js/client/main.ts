@@ -19,15 +19,18 @@
 import * as pageManager from "./page_manager";
 import * as eventManager from "./event_manager"
 import * as localization from "./localization";
+import * as layoutManager from "./layout_manager";
+import { BodyClasses } from "../interface/BodyClasses";
 
 (function(){
     localization.init();
     eventManager.init();
+    layoutManager.init();
 
     localization.sitewideLanguageLoaded().then(function()
     {
         localization.decorateAllElements();
-    });    
+    });
 
     try
     {

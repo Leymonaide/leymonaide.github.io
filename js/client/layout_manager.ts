@@ -1,6 +1,6 @@
 /* 
  * This file is part of Leymonaide's homepage.
- * Copyright (c) 2025 Leymonaide.
+ * Copyright (c) 2026 Leymonaide.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -16,21 +16,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This module handles basic loading of the theme (light/dark mode) at page
-// initialization.
-
 import { BodyClasses } from "../interface/BodyClasses";
+import * as eventManager from "./event_manager";
 
-(function(){
-    // TODO: Check for cookie.
+export function init(): void
+{
+    eventManager.addEvent(window, "resize", onResizeWindow);
+}
 
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)"))
-    {
-        document.body.classList.add(BodyClasses.DarkTheme);
-    }
-
+function onResizeWindow(e: Event): void
+{
     if (window.innerWidth < 720)
     {
         document.body.classList.add(BodyClasses.ThinLayout);
     }
-})();
+    else
+    {
+        document.body.classList.remove(BodyClasses.ThinLayout);
+    }
+}

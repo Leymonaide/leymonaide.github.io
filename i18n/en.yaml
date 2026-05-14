@@ -7,7 +7,7 @@ sitewide_nav:
 home_intro:
   hello: Hello!
   who: My name is Leymonaide. I like computers.
-  what: |
+  what: >
     This is my website where I aggregate my projects and write about
     topics which interest me. You know, the usual.
 

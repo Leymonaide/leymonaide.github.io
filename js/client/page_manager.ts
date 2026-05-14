@@ -86,8 +86,6 @@ export async function navigateToPage(
     navigationSourceElement: HTMLElement,
 ): Promise<void>
 {
-    navigationSourceElement.classList.add("lockup-target");
-
     const route = Router.routeUri(url);
 
     if (!route)
@@ -97,6 +95,7 @@ export async function navigateToPage(
         return;
     }
 
+    navigationSourceElement.classList.add("lockup-target");
     document.body.classList.add(BodyClasses.LoadingAjax);
 
     try
@@ -110,6 +109,14 @@ export async function navigateToPage(
     }
     catch (e)
     {
+        // This is clean up for page mutations which may be preserved by the
+        // browser in the case of some cold navigations. I find this is
+        // particularly common when the server returns a 404 page and AJAX
+        // navigation was attempted. The page will be restored with all
+        // mutations kept, but a new script session will start.
+        document.body.classList.remove(BodyClasses.LoadingAjax);
+        navigationSourceElement.classList.remove("lockup-target");
+        
         window.location.href = url;
         return;
     }

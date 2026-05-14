@@ -17,8 +17,14 @@
  */
 
 @use "sass:color";
+@use "include/macros.scss";
 
 $topbar-height: 40px;
+
+[data-localization-failed]
+{
+    color: #f00 !important;
+}
 
 html
 {
@@ -31,6 +37,27 @@ html
     --module-bg-border: hsl(0, 0%, 91%);
     --module-prominent-text: hsl(0, 0%, 20%);
     --module-light-text: hsl(0, 0%, 60%);
+}
+
+.thin-layout
+{
+    --page-width: 100%;
+
+    .hide-on-thin-layout
+    {
+        display: none;
+    }
+}
+
+.dark-theme
+{
+    --content-wash-bg-color: rgba(128, 128, 128, 0.4);
+    --body-bg-color: hsl(53, 56%, 74%); // I think this is a cute color for now.
+    --module-bg-color-primary: hsl(47.1, 12.3%, 22.4%);
+    --module-bg-color-secondary: hsl(47.1, 12.3%, 18.4%);
+    --module-bg-border: hsl(47.1, 12.3%, 13.0%);
+    --module-prominent-text: hsl(0, 0%, 100%);
+    --module-light-text: hsl(0, 0%, 75%);
 }
 
 .initial-loading-container
@@ -144,11 +171,22 @@ ul
 
     background: var(--content-wash-bg-color);
     position: relative;
-    width: calc(var(--page-width) - (var(--content-padding) * 2));
+    max-width: calc(var(--page-width) - (var(--content-padding) * 2));
     padding: calc(var(--content-padding) + $topbar-height) 
         var(--content-padding) 
         var(--content-padding);
     margin: 0 auto;
+
+    @include macros.layout-transition;
+}
+
+.thin-layout #content
+{
+    --content-padding: 7px;
+
+    width: 100%;
+    max-width: unset;
+    padding: $topbar-height 0;
 }
 
 .content-container
@@ -175,11 +213,34 @@ ul
         {
             width: 33%;
         }
+
+        @at-root .thin-layout &
+        {
+            margin-right: unset;
+
+            &.two-thirds, &.one-third
+            {
+                width: 100%;
+            }
+
+            &:first-of-type .module
+            {
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+        }
     }
 
     &.column-layout
     {
         display: flex;
+
+        @at-root .thin-layout &
+        {
+            // Contradictorily to its name, this actually makes each column's
+            // content be displayed on a new row.
+            flex-direction: column;
+        }
     }
 }
 
@@ -198,10 +259,14 @@ ul
     // element.
     overflow: hidden;
 
+    @include macros.layout-transition;
+
     &.basic-module
     {
+        color: var(--module-prominent-text);
         background: var(--module-bg-color-primary);
         padding: 12px;
+        font-size: 13px;
     }
 }
 

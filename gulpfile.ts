@@ -93,8 +93,9 @@ class CacheManager
             callback: through2.TransformCallback,
         )
         {
-            if (!g_fastBuild)
+            if (!g_fastBuild && !g_superFastBuild)
             {
+                console.error("what");
                 this.push(file);
                 callback();
                 return;
@@ -188,7 +189,6 @@ function buildInlineJs(): NodeJS.WritableStream
     console.log(`Using super fast build: ${g_superFastBuild ? "true" : "false"}`);
     return pipeline(
         gulp.src("js/inline/*.ts"),
-        logTransform("Grabbed files"),
         CacheManager.readFromCache(
             "inline_js",
             (s) => s.replace(".ts", ".js"),
@@ -197,15 +197,12 @@ function buildInlineJs(): NodeJS.WritableStream
                 g_inlineJs[scriptName] = await fh.readFile({encoding: "utf8"});
             },
         ),
-        logTransform("Read from cache"),
         g_superFastBuild ? doNothingTransform() : gulp_ts({
             rootDir: process.cwd(),
             module: "es2015",
             moduleResolution: "node",
         }),
-        logTransform("Ran gulp_ts"),
         g_superFastBuild ? doNothingTransform() : gulp_uglify(),
-        logTransform("Ran gulp_uglify (or nothing)"),
         g_superFastBuild ? doNothingTransform() : CacheManager.writeToCache(
             "inline_js",
             async (file, fh) => {
@@ -213,7 +210,6 @@ function buildInlineJs(): NodeJS.WritableStream
                 g_inlineJs[scriptName] = file.contents!.toString();
             },
         ),
-        logTransform("Wrote to cache (and done)"),
     )
 }
 
