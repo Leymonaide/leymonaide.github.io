@@ -147,6 +147,7 @@ ul {
   border-top: 4px solid rgb(191.25, 191.25, 191.25);
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
+  vertical-align: top;
   margin-top: 4px;
   margin-left: 4px;
   box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.75);

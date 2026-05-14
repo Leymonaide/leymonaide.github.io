@@ -20,8 +20,19 @@ import { BodyClasses } from "../interface/BodyClasses";
 import { Router } from "../shared/Router";
 import * as navigation from "./navigation";
 import * as localization from "./localization";
+import * as eventManager from "./event_manager";
 
 const g_pageCache: Record<string, string> = {};
+
+export function init(): void
+{
+    eventManager.addEvent(window, "popstate", onPopState);
+}
+
+function onPopState(e: PopStateEvent): void
+{
+    navigateToPage(window.location.pathname, null, true);
+}
 
 export async function loadInitialPage(): Promise<void>
 {
@@ -84,7 +95,8 @@ export async function loadPageFragmentsForUrl(url: string): Promise<void>
 
 export async function navigateToPage(
     url: string,
-    navigationSourceElement: HTMLElement,
+    navigationSourceElement: HTMLElement|null = null,
+    noPushState: boolean = false,
 ): Promise<void>
 {
     const route = Router.routeUri(url);
@@ -96,17 +108,18 @@ export async function navigateToPage(
         return;
     }
 
-    navigationSourceElement.classList.add("lockup-target");
+    navigationSourceElement?.classList.add("lockup-target");
     document.body.classList.add(BodyClasses.LoadingAjax);
 
     try
     {
         await loadPageFragmentsForUrl(url);
-        window.history.pushState(null, null, url);
+        if (!noPushState)
+            window.history.pushState(null, null, url);
         navigation.updateNavBarSelectedItem();
 
         document.body.classList.remove(BodyClasses.LoadingAjax);
-        navigationSourceElement.classList.remove("lockup-target");
+        navigationSourceElement?.classList.remove("lockup-target");
     }
     catch (e)
     {
@@ -116,7 +129,7 @@ export async function navigateToPage(
         // navigation was attempted. The page will be restored with all
         // mutations kept, but a new script session will start.
         document.body.classList.remove(BodyClasses.LoadingAjax);
-        navigationSourceElement.classList.remove("lockup-target");
+        navigationSourceElement?.classList.remove("lockup-target");
         
         window.location.href = url;
         return;
@@ -131,5 +144,8 @@ async function requestPageFragments(fragmentsUri: string): Promise<string>
     }
 
     const response = await fetch(fragmentsUri);
-    return await response.text();
+    const text = await response.text();
+
+    g_pageCache[fragmentsUri] = text;
+    return text;
 }

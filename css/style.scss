@@ -191,6 +191,7 @@ ul
             {
                 @include macros.caret(down, 8px, 
                     color.scale($topbar-base-text-color, $lightness: -25%));
+                vertical-align: top;
                 margin-top: 4px;
                 margin-left: 4px;
                 box-shadow: 0 -1px 0 rgba(0, 0, 0, .75);
@@ -235,7 +236,7 @@ ul
     margin: 0 auto;
 
     @include macros.layout-transition;
-    
+
     @at-root .thin-layout &
     {
         margin-right: unset;

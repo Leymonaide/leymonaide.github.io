@@ -17,7 +17,7 @@
  */
 
 import { Navigation } from "./Navigation";
-import { NavigationItem } from "./NavigationItem";
+import { NavigationItem, NavigationItemDropdownItem } from "./NavigationItem";
 import { PageTitle } from "./PageTitle";
 
 /**
@@ -65,10 +65,28 @@ export class App
         this.inlinedJs = inlinedJs;
 
         this.navigation = new Navigation();
-        this.navigation.insertItem(new NavigationItem("sitewide_nav.home", "home", "/"));
-        this.navigation.insertItem(new NavigationItem("sitewide_nav.projects", "projects", "/projects"));
-        this.navigation.insertItem(new NavigationItem("sitewide_nav.blog", "blog", "/blog"));
-        this.navigation.insertItem(new NavigationItem("sitewide_nav.friends", "friends", "/friends"));
+        this.navigation.insertItem(new NavigationItem(
+            "sitewide_nav.home", "home", "/"
+        ));
+        this.navigation.insertItem(new NavigationItem(
+            "sitewide_nav.projects", "projects", "/projects",
+            [
+                new NavigationItemDropdownItem(
+                    "sitewide_nav.projects_rehike", "projects_rehike",
+                    "/projects/rehike",
+                ),
+                new NavigationItemDropdownItem(
+                    "sitewide_nav.projects_retwitter", "projects_retwitter",
+                    "/projects/retwitter",
+                ),
+            ],
+        ));
+        this.navigation.insertItem(new NavigationItem(
+            "sitewide_nav.blog", "blog", "/blog"
+        ));
+        this.navigation.insertItem(new NavigationItem(
+            "sitewide_nav.friends", "friends", "/friends"
+        ));
 
         this.navigation.selectItemFromBaseName(this._pageBaseName);
     }

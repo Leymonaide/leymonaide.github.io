@@ -21,14 +21,7 @@
         <div class="container">
             <ul>
                 {% for item in navigation.items %}
-                    {# Items under dynamic rendering always have their active state
-                    set by JS once the common template is downloaded. #}
-                    <li{% if app.staticRender and item == navigation.getActiveItem() %} class="active"{% endif %}>
-                        <a href="{{ item.href }}">
-                            <span class="icon {{ item.icon }}"></span>
-                            <span class="label" data-string="{{ item.title }}"></span>
-                        </a>
-                    </li>
+                    {{ render_navigation_item(item) }}
                 {% endfor %}
             </ul>
             <ul class="right">
@@ -41,4 +34,25 @@
             </ul>
         </div>
     </nav>
+{% endmacro %}
+
+{% macro render_navigation_item(item) %}
+    {# Items under dynamic rendering always have their active state set by JS
+       once the common template is downloaded. #}
+    {% set className = [
+        'active' if app.staticRender and item == navigation.getActiveItem(),
+        'ui-has-dropdown-menu' if item.dropdownMenu
+    ]|join(' ')|trim %}
+    <li{% if className|length > 0 %} class="{{ className }}"{% endif %}>
+        <a href="{{ item.href }}">
+            <span class="icon {{ item.icon }}"></span>
+            <span class="label" data-string="{{ item.title }}"></span>
+            {% if item.dropdownMenu %}
+            <span class="caret"></span>
+            <div class="ui-dropdown-menu hid">
+                {# TODO: Design this element. #}
+            </div>
+            {% endif %}
+        </a>
+    </li>
 {% endmacro %}

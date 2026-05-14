@@ -88,10 +88,15 @@ function handleClickAnchorOrChild(e: Event): void
 
             if (isLinkRelative)
             {
+                // A new history state will not be pushed if the link goes to
+                // the exact same page that we're already on to avoid polluting
+                // the history with consecutive duplicate results.
+                let isSamePage = linkHref.pathname == window.location.pathname;
+
                 // Prevent the browser from doing manual navigation.
                 try
                 {
-                    pageManager.navigateToPage(linkHref.pathname, anchor);
+                    pageManager.navigateToPage(linkHref.pathname, anchor, isSamePage);
                     e.preventDefault();
                 }
                 catch (e)
@@ -144,11 +149,12 @@ export function addDelegatedEvent(
     eventName: string,
     className: string,
     cb: DelegateEventPrototype,
+    delegateTarget: EventTarget = document,
 ): number
 {
-    if (!isActiveEventName(eventName))
+    if (document != delegateTarget || !isActiveEventName(eventName))
     {
-        addEvent(document, eventName, getDelegateHandler(eventName));
+        addEvent(delegateTarget, eventName, getDelegateHandler(eventName));
         g_activeDelegateEvents.push(eventName);
     }
 

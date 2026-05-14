@@ -1,6 +1,6 @@
 /* 
  * This file is part of Leymonaide's homepage.
- * Copyright (c) 2025 Leymonaide.
+ * Copyright (c) 2025-2026 Leymonaide.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -16,6 +16,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export class NavigationItemDropdownItem
+{
+    public readonly title: string;
+    public readonly icon: string|null;
+    public readonly href: string;
+
+    constructor(
+        title: string,
+        icon: string|null,
+        href: string,
+    )
+    {
+        this.title = title;
+        this.icon = icon;
+        this.href = href;
+    }
+}
+
 /**
  * Model of items of the navigation bar.
  */
@@ -24,11 +42,18 @@ export class NavigationItem
     public readonly title: string;
     public readonly icon: string;
     public readonly href: string;
+    public readonly dropdownMenu: NavigationItemDropdownItem[]|null;
 
-    constructor(title: string, icon: string, href: string)
+    constructor(
+        title: string,
+        icon: string,
+        href: string,
+        dropdownMenu: NavigationItemDropdownItem[]|null = null,
+    )
     {
         this.title = title;
         this.icon = icon;
         this.href = href;
+        this.dropdownMenu = dropdownMenu;
     }
 }

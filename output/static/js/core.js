@@ -176,67 +176,9 @@
     }
   }
 
-  // js/client/page_manager.ts
-  var g_pageCache = {};
-  async function loadInitialPage() {
-    await loadPageContainer();
-    updateNavBarSelectedItem();
-    await loadPageFragmentsForUrl(window.location.pathname);
-    const initialLoadTime = window["leymonaide"]?.cfg_?.INITIAL_LOAD_TIME ?? null;
-    if (initialLoadTime && initialLoadTime + 250 > Date.now()) {
-      document.querySelector("#body-container")?.classList.add("no-transition");
-    }
-    document.body.classList.remove("initial-loading" /* InitialLoading */);
-  }
-  async function loadPageContainer() {
-    const fragmentsDocument = await fetch("/fragment/body_container");
-    const text = await fragmentsDocument.text();
-    const contentElement = document.querySelector("#body-container");
-    contentElement.innerHTML = text;
-    await sitewideLanguageLoaded();
-    decorateAllElements();
-  }
-  async function loadPageFragmentsForUrl(url) {
-    const route = Router.routeUri(url);
-    if (!route) {
-      throw new Error(`The requested page for URL "${url}" could not be routed`);
-    }
-    const text = await requestPageFragments(route.fragmentsUri);
-    const contentElement = document.querySelector("#content");
-    contentElement.innerHTML = text;
-    await sitewideLanguageLoaded();
-    decorateAllElements();
-  }
-  async function navigateToPage(url, navigationSourceElement) {
-    const route = Router.routeUri(url);
-    if (!route) {
-      window.location.href = url;
-      return;
-    }
-    navigationSourceElement.classList.add("lockup-target");
-    document.body.classList.add("loading-ajax" /* LoadingAjax */);
-    try {
-      await loadPageFragmentsForUrl(url);
-      window.history.pushState(null, null, url);
-      updateNavBarSelectedItem();
-      document.body.classList.remove("loading-ajax" /* LoadingAjax */);
-      navigationSourceElement.classList.remove("lockup-target");
-    } catch (e) {
-      document.body.classList.remove("loading-ajax" /* LoadingAjax */);
-      navigationSourceElement.classList.remove("lockup-target");
-      window.location.href = url;
-      return;
-    }
-  }
-  async function requestPageFragments(fragmentsUri) {
-    if (g_pageCache[fragmentsUri]) {
-      return g_pageCache[fragmentsUri];
-    }
-    const response = await fetch(fragmentsUri);
-    return await response.text();
-  }
-
   // js/client/event_manager.ts
+  var g_delegateHandlers = {};
+  var g_activeDelegateEvents = [];
   var EventWrapper = class {
     target;
     name;
@@ -274,8 +216,9 @@
         const linkHref = new URL(anchor.href, window.location.origin);
         const isLinkRelative = linkHref.origin == window.location.origin;
         if (isLinkRelative) {
+          let isSamePage = linkHref.pathname == window.location.pathname;
           try {
-            navigateToPage(linkHref.pathname, anchor);
+            navigateToPage(linkHref.pathname, anchor, isSamePage);
             e.preventDefault();
           } catch (e2) {
           }
@@ -300,9 +243,126 @@
       target["detachEvent"]("on" + name, cb);
     }
   }
+  function isActiveEventName(name) {
+    return g_activeDelegateEvents.includes(name);
+  }
+  function addDelegatedEvent(eventName, className, cb, delegateTarget = document) {
+    if (document != delegateTarget || !isActiveEventName(eventName)) {
+      addEvent(delegateTarget, eventName, getDelegateHandler(eventName));
+      g_activeDelegateEvents.push(eventName);
+    }
+    return addDelegateHandler(eventName, className, cb);
+  }
+  function getDelegateHandler(eventName) {
+    return function(e) {
+      let activeElement = e.target;
+      const handlerClassNameList = g_delegateHandlers[eventName];
+      while (null != activeElement) {
+        if (activeElement.className) {
+          let classes;
+          if (activeElement.classList) {
+            classes = Array.from(activeElement.classList);
+          } else {
+            classes = activeElement.className.split(" ");
+          }
+          for (const className of classes) {
+            if (className in handlerClassNameList) {
+              for (const cb of handlerClassNameList[className]) {
+                if (typeof cb == "function") {
+                  cb(activeElement, e);
+                }
+              }
+            } else if ("event-no-propagate" == className) {
+              return;
+            }
+          }
+        }
+        activeElement = activeElement.parentElement;
+      }
+    };
+  }
+  function addDelegateHandler(eventName, className, cb) {
+    if (!(eventName in g_delegateHandlers)) {
+      g_delegateHandlers[eventName] = {};
+    }
+    if (!(className in g_delegateHandlers[eventName])) {
+      g_delegateHandlers[eventName][className] = [];
+    }
+    g_delegateHandlers[eventName][className].push(cb);
+    return g_delegateHandlers[eventName][className].length - 1;
+  }
+
+  // js/client/page_manager.ts
+  var g_pageCache = {};
+  function init3() {
+    addEvent(window, "popstate", onPopState);
+  }
+  function onPopState(e) {
+    navigateToPage(window.location.pathname, null, true);
+  }
+  async function loadInitialPage() {
+    await loadPageContainer();
+    updateNavBarSelectedItem();
+    await loadPageFragmentsForUrl(window.location.pathname);
+    const initialLoadTime = window["leymonaide"]?.cfg_?.INITIAL_LOAD_TIME ?? null;
+    if (initialLoadTime && initialLoadTime + 250 > Date.now()) {
+      document.querySelector("#body-container")?.classList.add("no-transition");
+    }
+    document.body.classList.remove("initial-loading" /* InitialLoading */);
+  }
+  async function loadPageContainer() {
+    const fragmentsDocument = await fetch("/fragment/body_container");
+    const text = await fragmentsDocument.text();
+    const contentElement = document.querySelector("#body-container");
+    contentElement.innerHTML = text;
+    await sitewideLanguageLoaded();
+    decorateAllElements();
+  }
+  async function loadPageFragmentsForUrl(url) {
+    const route = Router.routeUri(url);
+    if (!route) {
+      throw new Error(`The requested page for URL "${url}" could not be routed`);
+    }
+    const text = await requestPageFragments(route.fragmentsUri);
+    const contentElement = document.querySelector("#content");
+    contentElement.innerHTML = text;
+    await sitewideLanguageLoaded();
+    decorateAllElements();
+  }
+  async function navigateToPage(url, navigationSourceElement = null, noPushState = false) {
+    const route = Router.routeUri(url);
+    if (!route) {
+      window.location.href = url;
+      return;
+    }
+    navigationSourceElement?.classList.add("lockup-target");
+    document.body.classList.add("loading-ajax" /* LoadingAjax */);
+    try {
+      await loadPageFragmentsForUrl(url);
+      if (!noPushState)
+        window.history.pushState(null, null, url);
+      updateNavBarSelectedItem();
+      document.body.classList.remove("loading-ajax" /* LoadingAjax */);
+      navigationSourceElement?.classList.remove("lockup-target");
+    } catch (e) {
+      document.body.classList.remove("loading-ajax" /* LoadingAjax */);
+      navigationSourceElement?.classList.remove("lockup-target");
+      window.location.href = url;
+      return;
+    }
+  }
+  async function requestPageFragments(fragmentsUri) {
+    if (g_pageCache[fragmentsUri]) {
+      return g_pageCache[fragmentsUri];
+    }
+    const response = await fetch(fragmentsUri);
+    const text = await response.text();
+    g_pageCache[fragmentsUri] = text;
+    return text;
+  }
 
   // js/client/layout_manager.ts
-  function init3() {
+  function init4() {
     addEvent(window, "resize", onResizeWindow);
   }
   function onResizeWindow(e) {
@@ -313,11 +373,32 @@
     }
   }
 
+  // js/client/dropdown_menu.ts
+  function init5() {
+    addDelegatedEvent(
+      "click",
+      "ui-has-dropdown-menu",
+      onClickDropdownMenuContainer,
+      // The navigation AJAX handler rests on the document object, aka the
+      // <html> root node. In order to block the navigation events of anchors
+      // underneath elements with dropdown menus, the event delegate needs to
+      // rest below that, so we specify document.body (the <body> element) to
+      // be our delegate host.
+      document.body
+    );
+  }
+  function onClickDropdownMenuContainer(elm, e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
   // js/client/main.ts
   (function() {
     init();
     init2();
+    init4();
     init3();
+    init5();
     sitewideLanguageLoaded().then(function() {
       decorateAllElements();
     });

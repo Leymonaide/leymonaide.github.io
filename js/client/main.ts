@@ -17,15 +17,19 @@
  */
 
 import * as pageManager from "./page_manager";
-import * as eventManager from "./event_manager"
+import * as eventManager from "./event_manager";
 import * as localization from "./localization";
 import * as layoutManager from "./layout_manager";
+import * as dropdownMenu from "./dropdown_menu";
 import { BodyClasses } from "../interface/BodyClasses";
 
 (function(){
     localization.init();
     eventManager.init();
     layoutManager.init();
+    pageManager.init();
+
+    dropdownMenu.init();
 
     localization.sitewideLanguageLoaded().then(function()
     {
