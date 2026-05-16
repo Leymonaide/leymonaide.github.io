@@ -46,13 +46,28 @@
     <li{% if className|length > 0 %} class="{{ className }}"{% endif %}>
         <a href="{{ item.href }}">
             <span class="icon {{ item.icon }}"></span>
-            <span class="label" data-string="{{ item.title }}"></span>
-            {% if item.dropdownMenu %}
-            <span class="caret"></span>
-            <div class="ui-dropdown-menu hid">
-                {# TODO: Design this element. #}
-            </div>
-            {% endif %}
+            <span class="label" data-string="{{ item.title }}"></span>{#
+            #}{% if item.dropdownMenu %}{#
+            #}<span class="caret"></span>{#
+            #}{% endif %}
         </a>
+        {% if item.dropdownMenu %}
+        <div class="ui-dropdown-menu hid">
+            <div class="dropdown-caret">
+                <div class="caret-outer"></div>
+                <div class="caret-inner"></div>
+            </div>
+            <ul role="menu">
+                {% for menuItem in item.dropdownMenu %}
+                    <li>
+                        <a href="{{ menuItem.href }}" class="dropdown-link">
+                            <span class="icon {{ menuItem.icon }}"></span>
+                            <span class="label" data-string="{{ menuItem.title }}"></span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </li>
 {% endmacro %}

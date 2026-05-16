@@ -127,7 +127,8 @@ export async function navigateToPage(
         // browser in the case of some cold navigations. I find this is
         // particularly common when the server returns a 404 page and AJAX
         // navigation was attempted. The page will be restored with all
-        // mutations kept, but a new script session will start.
+        // mutations kept, and the script session will be resumed rather than
+        // restarted.
         document.body.classList.remove(BodyClasses.LoadingAjax);
         navigationSourceElement?.classList.remove("lockup-target");
         

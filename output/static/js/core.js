@@ -65,27 +65,6 @@
     }
   }
 
-  // js/client/load_language.ts
-  function loadSitewideLanguage(signalLoaded) {
-    const siteConfig = window["leymonaide"]["cfg_"];
-    siteConfig.LANGUAGE = "en";
-    for (let lang of navigator.languages) {
-      if (Object.keys(LANGUAGE_ALIASES).includes(lang)) {
-        lang = LANGUAGE_ALIASES[lang];
-      }
-      if (APP_SUPPORTED_LANGUAGES.includes(lang)) {
-        siteConfig.LANGUAGE = lang;
-      }
-    }
-    document.documentElement.setAttribute("lang", siteConfig.LANGUAGE);
-    const curLang = siteConfig.LANGUAGE;
-    fetch("/static/i18n/" + curLang + ".json").then(async function(response) {
-      siteConfig.MSG = siteConfig.MSG || {};
-      siteConfig.MSG[curLang] = await response.json();
-      signalLoaded();
-    });
-  }
-
   // js/client/localization.ts
   var APP_SUPPORTED_LANGUAGES = [
     "en",
@@ -108,17 +87,27 @@
     }
   }
   function init() {
-    g_sitewideLanguageLoaded = new Promise(function(resolve, reject) {
-      try {
-        const wrappedResolver = function(value) {
-          resolve();
-          g_isLanguageLoaded = true;
-        };
-        loadSitewideLanguage(wrappedResolver);
-      } catch (e) {
-        reject(e);
+    g_sitewideLanguageLoaded = (async function() {
+      await loadSitewideLanguage();
+      g_isLanguageLoaded = true;
+    })();
+  }
+  async function loadSitewideLanguage() {
+    const siteConfig = window["leymonaide"]["cfg_"];
+    siteConfig.LANGUAGE = "en";
+    for (let lang of navigator.languages) {
+      if (Object.keys(LANGUAGE_ALIASES).includes(lang)) {
+        lang = LANGUAGE_ALIASES[lang];
       }
-    });
+      if (APP_SUPPORTED_LANGUAGES.includes(lang)) {
+        siteConfig.LANGUAGE = lang;
+      }
+    }
+    document.documentElement.setAttribute("lang", siteConfig.LANGUAGE);
+    const curLang = siteConfig.LANGUAGE;
+    const response = await fetch("/static/i18n/" + curLang + ".json");
+    siteConfig.MSG = siteConfig.MSG || {};
+    siteConfig.MSG[curLang] = await response.json();
   }
   function decorateAllElements() {
     ensureLanguageLoaded();
@@ -387,9 +376,81 @@
       document.body
     );
   }
-  function onClickDropdownMenuContainer(elm, e) {
-    e.stopPropagation();
-    e.preventDefault();
+  function onClickDropdownMenuContainer(elm, evt) {
+    if (!isMenuActive(elm)) {
+      showMenu(elm);
+      evt.stopPropagation();
+      evt.preventDefault();
+    } else {
+      hideMenu(elm);
+    }
+  }
+  function getWidgetMenu(elm) {
+    if (null === elm) {
+      return null;
+    }
+    if (elm._leymonaide_widgetMenu) {
+      return elm._leymonaide_widgetMenu;
+    }
+    const menuElement = elm.querySelector(".ui-dropdown-menu");
+    if (!menuElement) {
+      throw new Error("No menu element");
+    }
+    elm._leymonaide_widgetMenu = menuElement;
+    return menuElement;
+  }
+  function isMenuActive(elm) {
+    const menu = getWidgetMenu(elm);
+    return menu.classList.contains("active");
+  }
+  function showMenu(elm) {
+    const menu = getWidgetMenu(elm);
+    elm.setAttribute("aria-expanded", "true");
+    elm.setAttribute("aria-activedescendant", "true");
+    menu._leymonaide_parentNode = elm;
+    menu.parentNode.removeChild(menu);
+    const menuContainer = document.body;
+    menuContainer.appendChild(menu);
+    menu.style.minWidth = elm.offsetWidth - 2 + "px";
+    positionMenu(elm, menu);
+    menu.classList.remove("hid");
+    menu.classList.add("active");
+    elm.classList.add("menu-active");
+    const eventHandler = maybeHideMenu.bind(this, elm);
+    const clickListener = addEvent(document, "click", eventHandler);
+    const contextMenuListener = addEvent(document, "contextmenu", eventHandler);
+    elm._leymonaide_clickListener = clickListener;
+    elm._leymonaide_contextMenuListener = contextMenuListener;
+  }
+  function hideMenu(elm) {
+    const menu = getWidgetMenu(elm);
+    elm.setAttribute("aria-expanded", "false");
+    elm.removeAttribute("aria-activedescendant");
+    menu.classList.add("hid");
+    menu.classList.remove("active");
+    elm.classList.remove("menu-active");
+    elm._leymonaide_clickListener?.remove();
+    elm._leymonaide_contextMenuListener?.remove();
+  }
+  function positionMenu(menuOwner, menu) {
+    let x = menuOwner.offsetLeft;
+    let y = menuOwner.offsetTop + menuOwner.offsetHeight;
+    menu.style.left = x + "px";
+    menu.style.top = y + "px";
+  }
+  function maybeHideMenu(elm, evt) {
+    let target = evt.target;
+    let targetAnchor;
+    if (target.closest) {
+      let targetMenuOwner;
+      if (!target.closest("a") && target.closest(".ui-dropdown-menu")) {
+        return;
+      }
+      if ((targetMenuOwner = target.closest(".ui-has-dropdown-menu")) && getWidgetMenu(targetMenuOwner) == getWidgetMenu(elm)) {
+        return;
+      }
+    }
+    hideMenu(elm);
   }
 
   // js/client/main.ts

@@ -3,6 +3,8 @@ sitewide_nav:
   projects: Projects
   blog: Blog
   friends: Friends
+  projects_rehike: Rehike
+  projects_retwitter: Retwitter
 
 home_intro:
   hello: Hello!

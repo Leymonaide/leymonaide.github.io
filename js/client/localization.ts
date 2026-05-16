@@ -17,7 +17,6 @@
  */
 
 import { LanguageMessage, SiteConfig } from "../interface/SiteConfig";
-import loadSitewideLanguage from "./load_language";
 
 export const APP_SUPPORTED_LANGUAGES: string[] = [
     "en",
@@ -51,22 +50,42 @@ function ensureLanguageLoaded(): void
 
 export function init(): void
 {
-    g_sitewideLanguageLoaded = new Promise(function(resolve, reject)
+    g_sitewideLanguageLoaded = (async function()
     {
-        try
+        await loadSitewideLanguage();
+        g_isLanguageLoaded = true;
+    })();
+}
+
+export async function loadSitewideLanguage(): Promise<void>
+{
+    const siteConfig: SiteConfig = window["leymonaide"]["cfg_"];
+
+    // The default language is English.
+    siteConfig.LANGUAGE = "en";
+
+    // TODO: Check for cookie.
+
+    for (let lang of navigator.languages)
+    {
+        if (Object.keys(LANGUAGE_ALIASES).includes(lang))
         {
-            const wrappedResolver = function(value: void): void
-            {
-                resolve();
-                g_isLanguageLoaded = true;
-            }
-            loadSitewideLanguage(wrappedResolver);
+            lang = LANGUAGE_ALIASES[lang];
         }
-        catch (e)
+
+        if (APP_SUPPORTED_LANGUAGES.includes(lang))
         {
-            reject(e);
+            siteConfig.LANGUAGE = lang;
         }
-    });
+    }
+
+    document.documentElement.setAttribute("lang", siteConfig.LANGUAGE);
+
+    const curLang = siteConfig.LANGUAGE;
+
+    const response = await fetch("/static/i18n/" + curLang + ".json");
+    siteConfig.MSG = siteConfig.MSG || {};
+    siteConfig.MSG[curLang] = await response.json();
 }
 
 export function getMessage(messageId: string): string

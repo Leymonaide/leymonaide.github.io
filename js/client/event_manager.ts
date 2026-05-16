@@ -27,7 +27,7 @@ type EventHandlerRegistrationSet = Record<string, EventClassHandlerSet>
 const g_delegateHandlers: EventHandlerRegistrationSet = {};
 const g_activeDelegateEvents: string[] = [];
 
-class EventWrapper
+export class EventWrapper
 {
     public readonly target: EventTarget;
     public readonly name: string;
