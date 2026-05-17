@@ -23,9 +23,21 @@
 <div class="content-container column-layout">
     <div class="column two-thirds">
         <div class="module basic-module">
-            <h1 data-string="home_intro.hello"></h1>
+            <div class="module-header with-line">
+                <h1 data-string="home_intro.hello"></h1>
+            </div>
             <p data-string="home_intro.who"></p>
             <p data-string="home_intro.what"></p>
+        </div>
+        <div class="module projects-overview basic-module">
+            <div class="module-header with-line">
+                <h3 data-string="projects_overview.title"></h3>
+            </div>
+            <div>
+                Recent work on projects (from GitHub) API will be shown here.
+                This module will also display a nice lil loading placeholder
+                because it will need to request that data from the GitHub API.
+            </div>
         </div>
     </div>
     <div class="column one-third">
@@ -57,6 +69,14 @@
                         </a>
                     </li>
                 </ul>
+            </div>
+        </div>
+        <div class="module blog-preview basic-module">
+            <div class="module-header with-line">
+                <h3 data-string="blog_preview.title"></h3>
+            </div>
+            <div>
+                Recent blog posts will be shown here.
             </div>
         </div>
         {{ macros.site_footer_module() }}

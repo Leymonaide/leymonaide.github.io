@@ -67,7 +67,7 @@ html
     --body-bg-color: hsl(53, 56%, 74%); // I think this is a cute color for now.
     --module-bg-color-primary: hsl(47.1, 12.3%, 22.4%);
     --module-bg-color-secondary: hsl(47.1, 12.3%, 18.4%);
-    --module-bg-border: hsl(47.1, 12.3%, 13.0%);
+    --module-bg-border: hsl(45, 40%, 13.7%);
     --module-prominent-text: hsl(0, 0%, 100%);
     --module-light-text: hsl(0, 0%, 75%);
     --anchor-color: hsl(196.1, 76.1%, 72.2%);
@@ -86,6 +86,39 @@ a
     {
         text-decoration: underline;
     }
+}
+
+h1, h2, h3
+{
+    margin: 0;
+    font-weight: bold;
+    line-height: 1;
+}
+
+h1
+{
+    font-size: 24px;
+}
+
+h2
+{
+    font-size: 18px;
+}
+
+h3
+{
+    font-size: 14px;
+}
+
+h4
+{
+    font-size: 12px;
+    line-height: 18px;
+}
+
+h5, h6
+{
+    font-size: 10px;
 }
 
 .initial-loading-container
@@ -384,10 +417,31 @@ ul, ol
 
     &.basic-module
     {
+        --basic-module-padding: 12px;
+
         color: var(--module-prominent-text);
         background: var(--module-bg-color-primary);
-        padding: 12px;
+        padding: var(--basic-module-padding);
         font-size: 13px;
+
+        .module-header.with-line
+        {
+            margin-left: calc(-1 * var(--basic-module-padding));
+            margin-right: calc(-1 * var(--basic-module-padding));
+            padding-left: var(--basic-module-padding);
+            padding-right: var(--basic-module-padding);
+        }
+    }
+
+    .module-header
+    {
+        margin-bottom: 10px;
+
+        &.with-line
+        {
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--module-bg-border);
+        }
     }
 }
 

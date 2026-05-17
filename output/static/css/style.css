@@ -72,6 +72,33 @@ a:hover, a:focus {
   text-decoration: underline;
 }
 
+h1, h2, h3 {
+  margin: 0;
+  font-weight: bold;
+  line-height: 1;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 18px;
+}
+
+h3 {
+  font-size: 14px;
+}
+
+h4 {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+h5, h6 {
+  font-size: 10px;
+}
+
 .initial-loading-container {
   z-index: 999999;
   position: absolute;
@@ -304,10 +331,24 @@ ul, ol {
   }
 }
 .module.basic-module {
+  --basic-module-padding: 12px;
   color: var(--module-prominent-text);
   background: var(--module-bg-color-primary);
-  padding: 12px;
+  padding: var(--basic-module-padding);
   font-size: 13px;
+}
+.module.basic-module .module-header.with-line {
+  margin-left: calc(-1 * var(--basic-module-padding));
+  margin-right: calc(-1 * var(--basic-module-padding));
+  padding-left: var(--basic-module-padding);
+  padding-right: var(--basic-module-padding);
+}
+.module .module-header {
+  margin-bottom: 10px;
+}
+.module .module-header.with-line {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--module-bg-border);
 }
 
 .site-footer {

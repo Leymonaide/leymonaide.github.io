@@ -70,8 +70,6 @@ export class PageBuilder
                 },
             );
 
-            nunjucksEnv.addFilter("minifyCss", PageBuilder.minifyCss);
-
             // Ensure that the fragments folder exists in the output directory:
             await fs.mkdir("output/fragment", {
                 recursive: true,
@@ -144,10 +142,5 @@ export class PageBuilder
         }
 
         await Promise.all(fileWritePromises);
-    }
-
-    public static minifyCss(css: string): string
-    {
-        return css.replace(/\n|\s/g, "");
     }
 }

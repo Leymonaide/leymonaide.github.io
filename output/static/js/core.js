@@ -11,31 +11,31 @@
         uri: "/about",
         fragmentsUri: "/fragment/about",
         contentTemplate: "about",
-        pageTitle: "sitewide_nav.about_me"
+        pageTitle: "page_title.about_me"
       },
       {
         uri: "/projects/index",
         fragmentsUri: "/fragment/projects",
         contentTemplate: "projects",
-        pageTitle: "sitewide_nav.projects"
+        pageTitle: "page_title.projects"
       },
       {
         uri: "/projects/rehike",
         fragmentsUri: "/fragment/projects_rehike",
         contentTemplate: "projects_rehike",
-        pageTitle: "sitewide_nav.projects_rehike"
+        pageTitle: "page_title.projects_rehike"
       },
       {
         uri: "/projects/retwitter",
         fragmentsUri: "/fragment/projects_retwitter",
         contentTemplate: "projects_retwitter",
-        pageTitle: "sitewide_nav.projects_retwitter"
+        pageTitle: "page_title.projects_retwitter"
       },
       {
         uri: "/privacy",
         fragmentsUri: "/fragment/privacy",
         contentTemplate: "privacy",
-        pageTitle: "footer.privacy"
+        pageTitle: "page_title.privacy"
       }
     ];
     static routeUri(uri) {

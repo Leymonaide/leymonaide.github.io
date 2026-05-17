@@ -105,26 +105,26 @@ export class App
 
         this.navigation = new Navigation();
         this.navigation.insertItem(new NavigationItem(
-            "sitewide_nav.home", "home", "/"
+            "page_title.home", "home", "/"
         ));
         this.navigation.insertItem(new NavigationItem(
-            "sitewide_nav.projects", "projects", "/projects",
+            "page_title.projects", "projects", "/projects",
             [
                 new NavigationItemDropdownItem(
-                    "sitewide_nav.projects_rehike", "projects_rehike",
+                    "page_title.projects_rehike", "projects_rehike",
                     "/projects/rehike",
                 ),
                 new NavigationItemDropdownItem(
-                    "sitewide_nav.projects_retwitter", "projects_retwitter",
+                    "page_title.projects_retwitter", "projects_retwitter",
                     "/projects/retwitter",
                 ),
             ],
         ));
         this.navigation.insertItem(new NavigationItem(
-            "sitewide_nav.blog", "blog", "/blog"
+            "page_title.blog", "blog", "/blog"
         ));
         this.navigation.insertItem(new NavigationItem(
-            "sitewide_nav.friends", "friends", "/friends"
+            "page_title.friends", "friends", "/friends"
         ));
 
         this.navigation.selectItemFromBaseName(this._pageBaseName);

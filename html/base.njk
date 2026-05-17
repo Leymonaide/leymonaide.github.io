@@ -55,6 +55,10 @@
 
         <link rel="stylesheet" href="/static/css/style.css?v={{ app.appResourceVersion }}">
 
+        <noscript>
+            <link rel="stylesheet" href="/static/css/noscript_style.css?v={{ app.appResourceVersion }}">
+        </noscript>
+
         {# Initialize page JS configuration. #}
         <script>{{ "window.leymonaide={cfg_:{INITIAL_LOAD_TIME:Date.now()}" ~ "};" }}</script>
     </head>
