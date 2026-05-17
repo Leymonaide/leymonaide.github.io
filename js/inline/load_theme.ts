@@ -22,9 +22,53 @@
 import { BodyClasses } from "../interface/BodyClasses";
 
 (function(){
-    // TODO: Check for cookie.
+    const enum UserThemePreference
+    {
+        None,
+        Light,
+        Dark,
+    }
 
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)"))
+    function getThemePreferenceFromCookie(): UserThemePreference
+    {
+        const cookies = document.cookie?.split("; ") ?? [];
+        const jar: Record<string, string> = {};
+
+        for (const cookie of cookies)
+        {
+            const parts = cookie.split("=");
+            try
+            {
+                jar[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+            }
+            catch
+            {
+                // Ignore exceptions.
+            }
+        }
+
+        if (jar["theme"])
+        {
+            switch (jar["theme"].toLowerCase())
+            {
+                case "light":
+                    return UserThemePreference.Light;
+                case "dark":
+                    return UserThemePreference.Dark;
+            }
+        }
+
+        return UserThemePreference.None;
+    }
+
+    const userThemePreference = getThemePreferenceFromCookie();
+
+    if (userThemePreference == UserThemePreference.Light)
+    {
+        // Do nothing, there is no specific class for the light theme.
+    }
+    else if (userThemePreference == UserThemePreference.Dark
+        || window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)"))
     {
         document.body.classList.add(BodyClasses.DarkTheme);
     }

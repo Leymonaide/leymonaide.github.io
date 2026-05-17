@@ -52,6 +52,11 @@ export class Router
             fragmentsUri: "/fragment/projects_retwitter",
             contentTemplate: "projects_retwitter",
         },
+        {
+            uri: "/privacy",
+            fragmentsUri: "/fragment/privacy",
+            contentTemplate: "privacy",
+        },
     ];
 
     public static routeUri(uri: string): IRoute|null

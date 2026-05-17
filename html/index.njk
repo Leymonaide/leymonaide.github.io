@@ -18,6 +18,8 @@
 
 {# Template for index page. #}
 
+{% import "macros.njk" as macros %}
+
 <div class="content-container column-layout">
     <div class="column two-thirds">
         <div class="module basic-module">
@@ -38,8 +40,25 @@
                 </div>
             </a>
             <div class="socials">
-                Text
+                <ul>
+                    <li class="social-link">
+                        <a href="//bsky.app/profile/loveofleytoo.bsky.social" title="Bluesky">
+                            <span class="icon icon-bluesky"></span>
+                        </a>
+                    </li>
+                    <li class="social-link">
+                        <a href="//twitter.com/Leym0naide" title="Twitter">
+                            <span class="icon icon-twitter"></span>
+                        </a>
+                    </li>
+                    <li class="social-link">
+                        <a href="//github.com/Leymonaide" title="GitHub">
+                            <span class="icon icon-github"></span>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
+        {{ macros.site_footer_module() }}
     </div>
 </div>

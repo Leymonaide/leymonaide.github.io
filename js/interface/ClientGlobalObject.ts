@@ -1,6 +1,6 @@
-{#
+/* 
  * This file is part of Leymonaide's homepage.
- * Copyright (c) 2025 Leymonaide.
+ * Copyright (c) 2026 Leymonaide.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -14,18 +14,15 @@
  *
  * You should have received a copy of the GNU Affero General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
-#}
+ */
 
-{% macro inline_js(script_name) %}
-    <script>{{ app.inlinedJs[script_name]|safe }}</script>
-{% endmacro %}
+import { SiteConfig } from "./SiteConfig";
 
-{% macro site_footer_module() %}
-    <div class="module site-footer">
-        <ul class="clearfix">
-            <li class="copyright">&copy; Leymonaide</li>
-            <li><a href="/privacy" data-string="footer.privacy"></a></li>
-            <li><a href="//github.com/Leymonaide/leymonaide.github.io" target="_blank" data-string="footer.source_code"></a></li>
-        </ul>
-    </div>
-{% endmacro %}
+export type ClientWindow = Window & typeof globalThis & {
+    leymonaide: ClientGlobalObject;
+};
+
+export interface ClientGlobalObject
+{
+    cfg_: SiteConfig;
+}

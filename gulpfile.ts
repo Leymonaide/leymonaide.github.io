@@ -95,7 +95,6 @@ class CacheManager
         {
             if (!g_fastBuild && !g_superFastBuild)
             {
-                console.error("what");
                 this.push(file);
                 callback();
                 return;
@@ -219,10 +218,10 @@ function buildJsScripts(): NodeJS.WritableStream
 
     return pipeline(
         gulp.src("js/client/main.ts"),
-        CacheManager.readFromCache(
-            "client_js",
-            (s) => outputBundleName,
-        ),
+        // CacheManager.readFromCache(
+        //     "client_js",
+        //     (s) => outputBundleName,
+        // ),
         g_superFastBuild ? doNothingTransform() : gulp_ts({
             rootDir: process.cwd(),
             module: "es2015",
@@ -232,9 +231,10 @@ function buildJsScripts(): NodeJS.WritableStream
             outfile: outputBundleName,
             bundle: true,
         }),
-        g_superFastBuild ? doNothingTransform() : CacheManager.writeToCache(
-            "client_js",
-        ),
+        g_superFastBuild ? doNothingTransform() : gulp_uglify(),
+        // g_superFastBuild ? doNothingTransform() : CacheManager.writeToCache(
+        //     "client_js",
+        // ),
         gulp.dest("output/static/js")
     );
 }

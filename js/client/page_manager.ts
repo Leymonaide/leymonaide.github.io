@@ -88,6 +88,7 @@ export async function loadPageFragmentsForUrl(url: string): Promise<void>
     // CONSIDER: Using DOM parser and inserting nodes so that inserting
     // scripts just works.
     contentElement.innerHTML = text;
+    decoratePageFooter();
 
     await localization.sitewideLanguageLoaded();
     localization.decorateAllElements();
@@ -149,4 +150,16 @@ async function requestPageFragments(fragmentsUri: string): Promise<string>
 
     g_pageCache[fragmentsUri] = text;
     return text;
+}
+
+function decoratePageFooter(): void
+{
+    const copyrightElement: HTMLElement =
+        document.querySelector(".site-footer .copyright");
+
+    if (copyrightElement)
+    {
+        const yearStr = (new Date()).getFullYear();
+        copyrightElement.innerHTML = `&copy; ${yearStr} Leymonaide`;
+    }
 }

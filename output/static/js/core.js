@@ -26,6 +26,11 @@
         uri: "/projects/retwitter",
         fragmentsUri: "/fragment/projects_retwitter",
         contentTemplate: "projects_retwitter"
+      },
+      {
+        uri: "/privacy",
+        fragmentsUri: "/fragment/privacy",
+        contentTemplate: "privacy"
       }
     ];
     static routeUri(uri) {
@@ -315,6 +320,7 @@
     const text = await requestPageFragments(route.fragmentsUri);
     const contentElement = document.querySelector("#content");
     contentElement.innerHTML = text;
+    decoratePageFooter();
     await sitewideLanguageLoaded();
     decorateAllElements();
   }
@@ -348,6 +354,13 @@
     const text = await response.text();
     g_pageCache[fragmentsUri] = text;
     return text;
+  }
+  function decoratePageFooter() {
+    const copyrightElement = document.querySelector(".site-footer .copyright");
+    if (copyrightElement) {
+      const yearStr = (/* @__PURE__ */ new Date()).getFullYear();
+      copyrightElement.innerHTML = `&copy; ${yearStr} Leymonaide`;
+    }
   }
 
   // js/client/layout_manager.ts

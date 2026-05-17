@@ -129,9 +129,10 @@ body
     }
 }
 
-ul
+ul, ol
 {
     margin: 0;
+    padding: 0;
     list-style: none;
 }
 
@@ -317,22 +318,6 @@ ul
     margin: 0 auto;
 
     @include macros.layout-transition;
-
-    @at-root .thin-layout &
-    {
-        margin-right: unset;
-
-        &.two-thirds, &.one-third
-        {
-            width: 100%;
-        }
-
-        &:first-of-type .module
-        {
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-        }
-    }
 }
 
 .thin-layout #content
@@ -403,6 +388,53 @@ ul
         background: var(--module-bg-color-primary);
         padding: 12px;
         font-size: 13px;
+    }
+}
+
+.site-footer
+{
+    background: var(--module-bg-color-primary);
+    padding: 12px;
+    font-size: 12px;
+
+    &, & a
+    {
+        color: var(--module-light-text);
+    }
+
+    &:hover a, a:hover
+    {
+        color: var(--module-prominent-text);
+    }
+
+    ul
+    {
+        line-height: 18px;
+    }
+
+    li
+    {
+        float: left;
+        padding-right: 8px;
+    }
+}
+
+.thin-layout #content
+{
+    margin-right: unset;
+
+    &:first-of-type .module
+    {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+}
+
+.thin-layout .column
+{
+    &.two-thirds, &.one-third
+    {
+        width: 100%;
     }
 }
 
