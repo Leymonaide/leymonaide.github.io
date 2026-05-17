@@ -16,9 +16,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { getMessageForLanguage, LanguageMessage } from "../shared/localization_common";
+import { IRoute, Router } from "../shared/Router";
 import { Navigation } from "./Navigation";
 import { NavigationItem, NavigationItemDropdownItem } from "./NavigationItem";
-import { PageTitle } from "./PageTitle";
+import { PageTitle } from "../shared/PageTitle";
 
 /**
  * The root class for variables exposed to templates.
@@ -49,6 +51,11 @@ export class App
     public readonly navigation: Navigation;
 
     /**
+     * The currently requested route of the application.
+     */
+    public readonly route: IRoute;
+
+    /**
      * The title of the page.
      */
     public pageTitle: PageTitle;
@@ -58,11 +65,43 @@ export class App
      */
     private _pageBaseName: string;
 
-    public constructor(inlinedJs: Record<string, string>, pageBaseName: string)
+    /**
+     * The set of translatable
+     */
+    private _translations: LanguageMessage;
+
+    public constructor(
+        inlinedJs: Record<string, string>,
+        pageBaseName: string,
+        route: IRoute,
+        translations: LanguageMessage,
+    )
     {
-        this._pageBaseName = pageBaseName;
-        this.pageTitle = new PageTitle("");
+
         this.inlinedJs = inlinedJs;
+        this.route = route;
+        this._pageBaseName = pageBaseName;
+        this._translations = translations;
+
+        try
+        {
+            if (route.pageTitle)
+            {
+                const pageTitleStr = getMessageForLanguage(
+                    translations, "en", route.pageTitle
+                );
+                this.pageTitle = new PageTitle(pageTitleStr);
+            }
+            else
+            {
+                this.pageTitle = new PageTitle("");
+            }
+        }
+        catch (e)
+        {
+            console.error("Failed to get page title: " + e);
+            this.pageTitle = new PageTitle("");
+        }
 
         this.navigation = new Navigation();
         this.navigation.insertItem(new NavigationItem(

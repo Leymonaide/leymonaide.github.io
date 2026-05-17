@@ -16,7 +16,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { LanguageMessage, SiteConfig } from "../interface/SiteConfig";
+// This file implements client side functionality for the localization system.
+
+import { SiteConfig } from "../interface/SiteConfig";
+import { getMessageForLanguage } from "../shared/localization_common";
 
 export const APP_SUPPORTED_LANGUAGES: string[] = [
     "en",
@@ -97,13 +100,23 @@ export function getMessage(messageId: string): string
     let message: string|null;
     
     if (siteConfig.MSG[siteConfig.LANGUAGE]
-        && (message = getMessageForLanguage(siteConfig.LANGUAGE, messageId))
+        && (message = getMessageForLanguage(
+                siteConfig.MSG[siteConfig.LANGUAGE], 
+                siteConfig.LANGUAGE, 
+                messageId
+            )
+        )
     )
     {
         return message;
     }
     else if (siteConfig.MSG[DEFAULT_LANGUAGE]
-        && (message = getMessageForLanguage(DEFAULT_LANGUAGE, messageId))
+        && (message = getMessageForLanguage(
+                siteConfig.MSG[DEFAULT_LANGUAGE],
+                DEFAULT_LANGUAGE,
+                messageId
+            )
+        )
     )
     {
         return message;
@@ -143,7 +156,11 @@ export function decorateElement(element: HTMLElement): void
             return;
         }
 
-        const message = getMessageForLanguage(siteConfig.LANGUAGE, messageId);
+        const message = getMessageForLanguage(
+            siteConfig.MSG[siteConfig.LANGUAGE],
+            siteConfig.LANGUAGE,
+            messageId,
+        );
 
         element.innerText = message;
         element.setAttribute("data-localization-applied", "true");
@@ -153,59 +170,5 @@ export function decorateElement(element: HTMLElement): void
         element.innerText = `[${messageId}]`;
         element.setAttribute("data-localization-failed", "true");
         console.error("Failed to apply localization to element", element, e);
-    }
-}
-
-function getMessageForLanguage(languageId: string, messageId: string): string
-{
-    const siteConfig: SiteConfig = window["leymonaide"]["cfg_"];
-    let curRoot = siteConfig.MSG[languageId];
-
-    const messagePath = messageId.split(".");
-    if (1 === messagePath.length && curRoot[messageId])
-    {
-        return getMessageFromRecordAtPath(languageId, curRoot, messageId);
-    }
-    else
-    {
-        const actualMessageId = messagePath.pop();
-        let traversedPath = "";
-        for (const part of messagePath)
-        {
-            traversedPath += "." + part;
-            if ("object" === typeof curRoot[part])
-            {
-                curRoot = curRoot[part];
-            }
-            else
-            {
-                throw new Error(
-                    `The record at the path "${traversedPath.substring(1)}" ` +
-                    `in the message ID "${messageId}" is of type ${typeof curRoot[part]}, ` +
-                    `expected object`
-                );
-            }
-        }
-
-        return getMessageFromRecordAtPath(languageId, curRoot, actualMessageId);
-    }
-}
-
-function getMessageFromRecordAtPath(
-    languageId: string,
-    record: LanguageMessage,
-    messageId: string,
-): string
-{
-    if ("string" === typeof record[messageId])
-    {
-        return record[messageId];
-    }
-    else
-    {
-        throw new Error(
-            `Message ID "${messageId}" for language "${languageId}" is of ` +
-            `type ${typeof record[messageId]}, excepted string`
-        );
     }
 }

@@ -16,9 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export type LanguageMessage = {
-    [key: string]: string|LanguageMessage;
-};
+import { LanguageMessage } from "../shared/localization_common";
 
 /**
  * Initial runtime configuration for the website.

@@ -5,6 +5,10 @@ sitewide_nav:
   friends: Friends
   projects_rehike: Rehike
   projects_retwitter: Retwitter
+  
+  # Technically not pages found in the sitewide navigation, but this
+  # is more or less just used for page names. I might rename it later...
+  about_me: About me
 
 footer:
   privacy: Privacy policy

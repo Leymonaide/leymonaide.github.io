@@ -20,6 +20,7 @@ import { Router } from "../shared/Router.ts";
 import * as nunjucks from "nunjucks";
 import * as fs from "fs/promises";
 import * as html_minifer from "html-minifier-next";
+import * as Yaml from "yaml";
 import { App } from "../statically_rendered/App.ts";
 
 export class PageBuilder
@@ -87,7 +88,10 @@ export class PageBuilder
                 });
             }
 
-            const app = new App(this.inlineJs, baseName);
+            const i18nFile = await fs.readFile("i18n/en.yaml");
+            const i18n = Yaml.parse(i18nFile.toString());
+
+            const app = new App(this.inlineJs, baseName, route, i18n);
             nunjucksEnv.addGlobal("app", app);
 
             // Write the page fragment for the page:

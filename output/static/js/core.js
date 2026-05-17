@@ -10,27 +10,32 @@
       {
         uri: "/about",
         fragmentsUri: "/fragment/about",
-        contentTemplate: "about"
+        contentTemplate: "about",
+        pageTitle: "sitewide_nav.about_me"
       },
       {
         uri: "/projects/index",
         fragmentsUri: "/fragment/projects",
-        contentTemplate: "projects"
+        contentTemplate: "projects",
+        pageTitle: "sitewide_nav.projects"
       },
       {
         uri: "/projects/rehike",
         fragmentsUri: "/fragment/projects_rehike",
-        contentTemplate: "projects_rehike"
+        contentTemplate: "projects_rehike",
+        pageTitle: "sitewide_nav.projects_rehike"
       },
       {
         uri: "/projects/retwitter",
         fragmentsUri: "/fragment/projects_retwitter",
-        contentTemplate: "projects_retwitter"
+        contentTemplate: "projects_retwitter",
+        pageTitle: "sitewide_nav.projects_retwitter"
       },
       {
         uri: "/privacy",
         fragmentsUri: "/fragment/privacy",
-        contentTemplate: "privacy"
+        contentTemplate: "privacy",
+        pageTitle: "footer.privacy"
       }
     ];
     static routeUri(uri) {
@@ -70,6 +75,38 @@
     }
   }
 
+  // js/shared/localization_common.ts
+  function getMessageForLanguage(messagesSet, languageId, messageId) {
+    let curRoot = messagesSet;
+    const messagePath = messageId.split(".");
+    if (1 === messagePath.length && curRoot[messageId]) {
+      return getMessageFromRecordAtPath(languageId, curRoot, messageId);
+    } else {
+      const actualMessageId = messagePath.pop();
+      let traversedPath = "";
+      for (const part of messagePath) {
+        traversedPath += "." + part;
+        if ("object" === typeof curRoot[part]) {
+          curRoot = curRoot[part];
+        } else {
+          throw new Error(
+            `The record at the path "${traversedPath.substring(1)}" in the message ID "${messageId}" is of type ${typeof curRoot[part]}, expected object`
+          );
+        }
+      }
+      return getMessageFromRecordAtPath(languageId, curRoot, actualMessageId);
+    }
+  }
+  function getMessageFromRecordAtPath(languageId, record, messageId) {
+    if ("string" === typeof record[messageId]) {
+      return record[messageId];
+    } else {
+      throw new Error(
+        `Message ID "${messageId}" for language "${languageId}" is of type ${typeof record[messageId]}, excepted string`
+      );
+    }
+  }
+
   // js/client/localization.ts
   var APP_SUPPORTED_LANGUAGES = [
     "en",
@@ -81,6 +118,7 @@
     "en-US": "en",
     "en-GB": "en"
   };
+  var DEFAULT_LANGUAGE = "en";
   var g_sitewideLanguageLoaded;
   var g_isLanguageLoaded = false;
   function sitewideLanguageLoaded() {
@@ -114,6 +152,28 @@
     siteConfig.MSG = siteConfig.MSG || {};
     siteConfig.MSG[curLang] = await response.json();
   }
+  function getMessage(messageId) {
+    ensureLanguageLoaded();
+    const siteConfig = window["leymonaide"]["cfg_"];
+    let message;
+    if (siteConfig.MSG[siteConfig.LANGUAGE] && (message = getMessageForLanguage(
+      siteConfig.MSG[siteConfig.LANGUAGE],
+      siteConfig.LANGUAGE,
+      messageId
+    ))) {
+      return message;
+    } else if (siteConfig.MSG[DEFAULT_LANGUAGE] && (message = getMessageForLanguage(
+      siteConfig.MSG[DEFAULT_LANGUAGE],
+      DEFAULT_LANGUAGE,
+      messageId
+    ))) {
+      return message;
+    } else {
+      throw new Error(
+        `Language message "${messageId}" does not exist in the user's preferred language nor the default one`
+      );
+    }
+  }
   function decorateAllElements() {
     ensureLanguageLoaded();
     const elementList = Array.from(document.querySelectorAll("[data-string]"));
@@ -129,44 +189,17 @@
       if (element.getAttribute("data-localization-applied")) {
         return;
       }
-      const message = getMessageForLanguage(siteConfig.LANGUAGE, messageId);
+      const message = getMessageForLanguage(
+        siteConfig.MSG[siteConfig.LANGUAGE],
+        siteConfig.LANGUAGE,
+        messageId
+      );
       element.innerText = message;
       element.setAttribute("data-localization-applied", "true");
     } catch (e) {
       element.innerText = `[${messageId}]`;
       element.setAttribute("data-localization-failed", "true");
       console.error("Failed to apply localization to element", element, e);
-    }
-  }
-  function getMessageForLanguage(languageId, messageId) {
-    const siteConfig = window["leymonaide"]["cfg_"];
-    let curRoot = siteConfig.MSG[languageId];
-    const messagePath = messageId.split(".");
-    if (1 === messagePath.length && curRoot[messageId]) {
-      return getMessageFromRecordAtPath(languageId, curRoot, messageId);
-    } else {
-      const actualMessageId = messagePath.pop();
-      let traversedPath = "";
-      for (const part of messagePath) {
-        traversedPath += "." + part;
-        if ("object" === typeof curRoot[part]) {
-          curRoot = curRoot[part];
-        } else {
-          throw new Error(
-            `The record at the path "${traversedPath.substring(1)}" in the message ID "${messageId}" is of type ${typeof curRoot[part]}, expected object`
-          );
-        }
-      }
-      return getMessageFromRecordAtPath(languageId, curRoot, actualMessageId);
-    }
-  }
-  function getMessageFromRecordAtPath(languageId, record, messageId) {
-    if ("string" === typeof record[messageId]) {
-      return record[messageId];
-    } else {
-      throw new Error(
-        `Message ID "${messageId}" for language "${languageId}" is of type ${typeof record[messageId]}, excepted string`
-      );
     }
   }
 
@@ -286,6 +319,31 @@
     return g_delegateHandlers[eventName][className].length - 1;
   }
 
+  // js/shared/PageTitle.ts
+  var PageTitle = class {
+    titleLine;
+    constructor(titleLine) {
+      this.titleLine = titleLine;
+    }
+    getTitleLine() {
+      return this.titleLine;
+    }
+    /**
+     * Gets the decorated title, including the site attribution.
+     * 
+     * This is intended to be used for page metadata which appears in the chrome
+     * of the web browser and on search engines.
+     */
+    getDecoratedTitle() {
+      const title = this.getTitleLine();
+      if (title == "") {
+        return "Leymonaide";
+      } else {
+        return title + " - Leymonaide";
+      }
+    }
+  };
+
   // js/client/page_manager.ts
   var g_pageCache = {};
   function init3() {
@@ -319,7 +377,14 @@
     }
     const text = await requestPageFragments(route.fragmentsUri);
     const contentElement = document.querySelector("#content");
-    contentElement.innerHTML = text;
+    const domParser = new DOMParser();
+    const pageDoc = domParser.parseFromString(text, "text/html");
+    contentElement.innerHTML = "";
+    let el;
+    while (el = pageDoc.body.children[0]) {
+      pageDoc.body.removeChild(el);
+      contentElement.appendChild(el);
+    }
     decoratePageFooter();
     await sitewideLanguageLoaded();
     decorateAllElements();
@@ -337,6 +402,19 @@
       if (!noPushState)
         window.history.pushState(null, null, url);
       updateNavBarSelectedItem();
+      let pageTitle;
+      try {
+        if (route.pageTitle) {
+          const pageTitleStr = getMessage(route.pageTitle);
+          pageTitle = new PageTitle(pageTitleStr);
+        } else {
+          pageTitle = new PageTitle("");
+        }
+      } catch (e) {
+        console.error("Failed to get page title", e);
+        pageTitle = new PageTitle("");
+      }
+      document.title = pageTitle.getDecoratedTitle();
       document.body.classList.remove("loading-ajax" /* LoadingAjax */);
       navigationSourceElement?.classList.remove("lockup-target");
     } catch (e) {

@@ -27,6 +27,20 @@
     <head>
         <meta charset="utf-8">
 
+        {% if not app.staticRender %}
+            {# Prefetch the common body container template #}
+            <link rel="prefetch" href="/fragment/body_container">
+
+            {# Prefetch the content template #}
+            <link rel="prefetch" href="{{ app.route.fragmentsUri }}">
+        {% endif %}
+
+        {# Prefetch the core CSS styles #}
+        <link rel="prefetch" href="/static/css/style.css?v={{ app.appResourceVersion }}">
+
+        {# Prefetch the core JS script #}
+        <link rel="prefetch" href="/static/js/core.js?v={{ app.appResourceVersion }}">
+
         {# Fit site width to device width, useful for mobile phones. #}
         <meta name="viewport" content="width=device-width, initial-scale=1">
 

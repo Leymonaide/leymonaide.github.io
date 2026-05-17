@@ -21,6 +21,7 @@ import { Router } from "../shared/Router";
 import * as navigation from "./navigation";
 import * as localization from "./localization";
 import * as eventManager from "./event_manager";
+import { PageTitle } from "../shared/PageTitle";
 
 const g_pageCache: Record<string, string> = {};
 
@@ -84,10 +85,20 @@ export async function loadPageFragmentsForUrl(url: string): Promise<void>
     const text = await requestPageFragments(route.fragmentsUri);
 
     const contentElement = document.querySelector("#content");
-    
-    // CONSIDER: Using DOM parser and inserting nodes so that inserting
-    // scripts just works.
-    contentElement.innerHTML = text;
+
+    const domParser = new DOMParser();
+    const pageDoc = domParser.parseFromString(text, "text/html");
+
+    // Clear all nodes in the content element.
+    contentElement.innerHTML = "";
+
+    let el: Element;
+    while ((el = pageDoc.body.children[0]))
+    {
+        pageDoc.body.removeChild(el);
+        contentElement.appendChild(el);
+    }
+
     decoratePageFooter();
 
     await localization.sitewideLanguageLoaded();
@@ -118,6 +129,27 @@ export async function navigateToPage(
         if (!noPushState)
             window.history.pushState(null, null, url);
         navigation.updateNavBarSelectedItem();
+
+        let pageTitle: PageTitle;
+        try
+        {
+            if (route.pageTitle)
+            {
+                const pageTitleStr = localization.getMessage(route.pageTitle);
+                pageTitle = new PageTitle(pageTitleStr);
+            }
+            else
+            {
+                pageTitle = new PageTitle("");
+            }
+        }
+        catch (e)
+        {
+            console.error("Failed to get page title", e);
+            pageTitle = new PageTitle("");
+        }
+
+        document.title = pageTitle.getDecoratedTitle();
 
         document.body.classList.remove(BodyClasses.LoadingAjax);
         navigationSourceElement?.classList.remove("lockup-target");

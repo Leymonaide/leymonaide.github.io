@@ -21,6 +21,7 @@ export interface IRoute
     readonly uri: string;
     readonly fragmentsUri: string;
     readonly contentTemplate: string;
+    readonly pageTitle?: string;
     readonly allowWildcardMatch?: string;
 }
 
@@ -36,26 +37,31 @@ export class Router
             uri: "/about",
             fragmentsUri: "/fragment/about",
             contentTemplate: "about",
+            pageTitle: "sitewide_nav.about_me",
         },
         {
             uri: "/projects/index",
             fragmentsUri: "/fragment/projects",
             contentTemplate: "projects",
+            pageTitle: "sitewide_nav.projects",
         },
         {
             uri: "/projects/rehike",
             fragmentsUri: "/fragment/projects_rehike",
             contentTemplate: "projects_rehike",
+            pageTitle: "sitewide_nav.projects_rehike",
         },
         {
             uri: "/projects/retwitter",
             fragmentsUri: "/fragment/projects_retwitter",
             contentTemplate: "projects_retwitter",
+            pageTitle: "sitewide_nav.projects_retwitter",
         },
         {
             uri: "/privacy",
             fragmentsUri: "/fragment/privacy",
             contentTemplate: "privacy",
+            pageTitle: "footer.privacy",
         },
     ];
 
