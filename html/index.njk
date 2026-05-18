@@ -22,7 +22,7 @@
 
 <div class="content-container column-layout">
     <div class="column two-thirds">
-        <div class="module basic-module">
+        <div id="overview-column" class="module basic-module">
             <div class="module-header with-line">
                 <h1 data-string="home_intro.hello"></h1>
             </div>
@@ -41,36 +41,15 @@
         </div>
     </div>
     <div class="column one-third">
-        <div class="module mini-profile">
-            <a class="mini-profile-link-wrapper" href="/about">
-                <div class="mini-profile-content">
-                    <img class="avatar size32" src="//avatars.githubusercontent.com/u/230778645">
-                    <div>
-                        <b class="name">Leymonaide</b>
-                        <div class="about-link" data-string="mini_profile.see_more_about_me"></div>
-                    </div>
-                </div>
-            </a>
-            <div class="socials">
-                <ul>
-                    <li class="social-link">
-                        <a href="//bsky.app/profile/loveofleytoo.bsky.social" title="Bluesky">
-                            <span class="icon icon-bluesky"></span>
-                        </a>
-                    </li>
-                    <li class="social-link">
-                        <a href="//twitter.com/Leym0naide" title="Twitter">
-                            <span class="icon icon-twitter"></span>
-                        </a>
-                    </li>
-                    <li class="social-link">
-                        <a href="//github.com/Leymonaide" title="GitHub">
-                            <span class="icon icon-github"></span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        {{ macros.mini_profile(
+            subject_name="Leymonaide",
+            avatar_url="//avatars.githubusercontent.com/u/230778645",
+            link_url="/about",
+            link_text="mini_profile.see_more_about_me",
+            attributes={
+                "data-thin-layout-merge-after": "#overview-column"
+            }
+        ) }}
         <div class="module blog-preview basic-module">
             <div class="module-header with-line">
                 <h3 data-string="blog_preview.title"></h3>

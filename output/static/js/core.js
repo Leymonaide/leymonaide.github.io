@@ -39,8 +39,11 @@
       }
     ];
     static routeUri(uri) {
+      const curHost = false ? "https://leymonaide.github.io" : window.location.origin;
+      const url = new URL(uri, curHost);
+      const urlPlusIndex = new URL((uri + "/index").replace(/\/+/g, "/"), curHost);
       for (const route of this.ROUTES) {
-        if (uri == route.uri || (uri + "/index").replace(/\/+/g, "/") == route.uri) {
+        if (url.pathname == route.uri || urlPlusIndex.pathname == route.uri) {
           return route;
         }
       }
@@ -107,6 +110,27 @@
     }
   }
 
+  // js/client/cookie.ts
+  function get(name) {
+    const cookies = document.cookie ? document.cookie.split(/\s*;\s*/) : [];
+    const jar = {};
+    for (let cookie of cookies) {
+      const parts = cookie.split("=");
+      const value = parts.slice(1).join("=");
+      try {
+        const parsedName = decodeURIComponent(parts[0]);
+        if (!(parsedName in jar)) {
+          jar[parsedName] = decodeURIComponent(parts[1]);
+        }
+        if (name === parsedName) {
+          break;
+        }
+      } catch {
+      }
+    }
+    return jar[name] ?? void 0;
+  }
+
   // js/client/localization.ts
   var APP_SUPPORTED_LANGUAGES = [
     "en",
@@ -145,6 +169,10 @@
       if (APP_SUPPORTED_LANGUAGES.includes(lang)) {
         siteConfig.LANGUAGE = lang;
       }
+    }
+    let langCookie;
+    if (void 0 !== (langCookie = get("lang")) && validateLanguageName(langCookie)) {
+      siteConfig.LANGUAGE = langCookie;
     }
     document.documentElement.setAttribute("lang", siteConfig.LANGUAGE);
     const curLang = siteConfig.LANGUAGE;
@@ -201,6 +229,9 @@
       element.setAttribute("data-localization-failed", "true");
       console.error("Failed to apply localization to element", element, e);
     }
+  }
+  function validateLanguageName(languageName) {
+    return APP_SUPPORTED_LANGUAGES.includes(languageName);
   }
 
   // js/client/event_manager.ts
@@ -319,6 +350,81 @@
     return g_delegateHandlers[eventName][className].length - 1;
   }
 
+  // js/client/layout_manager.ts
+  function init3() {
+    addEvent(window, "resize", onResizeWindow);
+  }
+  function onResizeWindow(e) {
+    if (shouldEnterThinLayout()) {
+      enterThinLayout();
+    } else {
+      exitThinLayout();
+    }
+  }
+  function getThinLayoutTransitionPoint() {
+    return 720;
+  }
+  function applyThinLayoutMutations() {
+    if (document.body.classList.contains("thin-layout" /* ThinLayout */)) {
+      const mergeAfterElements = document.querySelectorAll("[data-thin-layout-merge-after]");
+      for (const element of Array.from(mergeAfterElements)) {
+        if (element.hasAttribute("data-thin-layout-moved")) {
+          continue;
+        }
+        const newPreviousSibling = document.querySelector(
+          element.getAttribute("data-thin-layout-merge-after")
+        );
+        if (!newPreviousSibling) {
+          console.error("Missing merge after element for ", element);
+          continue;
+        }
+        element._leymonaide_originalParentNode = element.parentNode;
+        element._leymonaide_originalPreviousSibling = element.previousElementSibling;
+        element.setAttribute("data-thin-layout-moved", "true");
+        element.parentNode.removeChild(element);
+        newPreviousSibling.insertAdjacentElement("afterend", element);
+      }
+    }
+  }
+  function undoThinLayoutMutations() {
+    const movedElements = document.querySelectorAll("[data-thin-layout-moved]");
+    for (const element of Array.from(movedElements)) {
+      if (element._leymonaide_originalPreviousSibling) {
+        element.parentNode.removeChild(element);
+        element._leymonaide_originalPreviousSibling.insertAdjacentElement(
+          "afterend",
+          element
+        );
+      } else if (element._leymonaide_originalParentNode) {
+        element.parentNode.removeChild(element);
+        element._leymonaide_originalParentNode.insertAdjacentElement(
+          "afterbegin",
+          element
+        );
+      } else {
+        console.error(
+          "Thin layout moved element has no valid parent node or previous sibling:",
+          element
+        );
+        continue;
+      }
+      element.removeAttribute("data-thin-layout-moved");
+      delete element._leymonaide_originalPreviousSibling;
+      delete element._leymonaide_originalParentNode;
+    }
+  }
+  function shouldEnterThinLayout() {
+    return window.innerWidth < getThinLayoutTransitionPoint();
+  }
+  function enterThinLayout() {
+    document.body.classList.add("thin-layout" /* ThinLayout */);
+    applyThinLayoutMutations();
+  }
+  function exitThinLayout() {
+    document.body.classList.remove("thin-layout" /* ThinLayout */);
+    undoThinLayoutMutations();
+  }
+
   // js/shared/PageTitle.ts
   var PageTitle = class {
     titleLine;
@@ -346,7 +452,7 @@
 
   // js/client/page_manager.ts
   var g_pageCache = {};
-  function init3() {
+  function init4() {
     addEvent(window, "popstate", onPopState);
   }
   function onPopState(e) {
@@ -354,8 +460,9 @@
   }
   async function loadInitialPage() {
     await loadPageContainer();
-    updateNavBarSelectedItem();
-    await loadPageFragmentsForUrl(window.location.pathname);
+    await navigateToPage(window.location.pathname, null, true, {
+      isInitialLoad: true
+    });
     const initialLoadTime = window["leymonaide"]?.cfg_?.INITIAL_LOAD_TIME ?? null;
     if (initialLoadTime && initialLoadTime + 250 > Date.now()) {
       document.querySelector("#body-container")?.classList.add("no-transition");
@@ -389,9 +496,10 @@
     await sitewideLanguageLoaded();
     decorateAllElements();
   }
-  async function navigateToPage(url, navigationSourceElement = null, noPushState = false) {
+  async function navigateToPage(url, navigationSourceElement = null, noPushState = false, options = {}) {
     const route = Router.routeUri(url);
-    if (!route) {
+    const isInitialLoad = options?.isInitialLoad ?? false;
+    if (!isInitialLoad && !route) {
       window.location.href = url;
       return;
     }
@@ -402,21 +510,10 @@
       if (!noPushState)
         window.history.pushState(null, null, url);
       updateNavBarSelectedItem();
-      let pageTitle;
-      try {
-        if (route.pageTitle) {
-          const pageTitleStr = getMessage(route.pageTitle);
-          pageTitle = new PageTitle(pageTitleStr);
-        } else {
-          pageTitle = new PageTitle("");
-        }
-      } catch (e) {
-        console.error("Failed to get page title", e);
-        pageTitle = new PageTitle("");
-      }
-      document.title = pageTitle.getDecoratedTitle();
+      updatePageTitle(route);
       document.body.classList.remove("loading-ajax" /* LoadingAjax */);
       navigationSourceElement?.classList.remove("lockup-target");
+      applyThinLayoutMutations();
     } catch (e) {
       document.body.classList.remove("loading-ajax" /* LoadingAjax */);
       navigationSourceElement?.classList.remove("lockup-target");
@@ -433,23 +530,26 @@
     g_pageCache[fragmentsUri] = text;
     return text;
   }
+  function updatePageTitle(route) {
+    let pageTitle;
+    try {
+      if (route.pageTitle) {
+        const pageTitleStr = getMessage(route.pageTitle);
+        pageTitle = new PageTitle(pageTitleStr);
+      } else {
+        pageTitle = new PageTitle("");
+      }
+    } catch (e) {
+      console.error("Failed to get page title", e);
+      pageTitle = new PageTitle("");
+    }
+    document.title = pageTitle.getDecoratedTitle();
+  }
   function decoratePageFooter() {
     const copyrightElement = document.querySelector(".site-footer .copyright");
     if (copyrightElement) {
       const yearStr = (/* @__PURE__ */ new Date()).getFullYear();
       copyrightElement.innerHTML = `&copy; ${yearStr} Leymonaide`;
-    }
-  }
-
-  // js/client/layout_manager.ts
-  function init4() {
-    addEvent(window, "resize", onResizeWindow);
-  }
-  function onResizeWindow(e) {
-    if (window.innerWidth < 720) {
-      document.body.classList.add("thin-layout" /* ThinLayout */);
-    } else {
-      document.body.classList.remove("thin-layout" /* ThinLayout */);
     }
   }
 
@@ -548,8 +648,8 @@
   (function() {
     init();
     init2();
-    init4();
     init3();
+    init4();
     init5();
     sitewideLanguageLoaded().then(function() {
       decorateAllElements();

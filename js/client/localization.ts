@@ -20,6 +20,7 @@
 
 import { SiteConfig } from "../interface/SiteConfig";
 import { getMessageForLanguage } from "../shared/localization_common";
+import * as cookie from "./cookie.ts";
 
 export const APP_SUPPORTED_LANGUAGES: string[] = [
     "en",
@@ -67,8 +68,6 @@ export async function loadSitewideLanguage(): Promise<void>
     // The default language is English.
     siteConfig.LANGUAGE = "en";
 
-    // TODO: Check for cookie.
-
     for (let lang of navigator.languages)
     {
         if (Object.keys(LANGUAGE_ALIASES).includes(lang))
@@ -80,6 +79,12 @@ export async function loadSitewideLanguage(): Promise<void>
         {
             siteConfig.LANGUAGE = lang;
         }
+    }
+
+    let langCookie: string|undefined;
+    if (undefined !== (langCookie = cookie.get("lang")) && validateLanguageName(langCookie))
+    {
+        siteConfig.LANGUAGE = langCookie;
     }
 
     document.documentElement.setAttribute("lang", siteConfig.LANGUAGE);
@@ -171,4 +176,9 @@ export function decorateElement(element: HTMLElement): void
         element.setAttribute("data-localization-failed", "true");
         console.error("Failed to apply localization to element", element, e);
     }
+}
+
+export function validateLanguageName(languageName: string): boolean
+{
+    return APP_SUPPORTED_LANGUAGES.includes(languageName);
 }

@@ -55,7 +55,7 @@ html {
   --body-bg-color: hsl(53, 56%, 74%);
   --module-bg-color-primary: hsl(47.1, 12.3%, 22.4%);
   --module-bg-color-secondary: hsl(47.1, 12.3%, 18.4%);
-  --module-bg-border: hsl(47.1, 12.3%, 13.0%);
+  --module-bg-border: hsl(45, 40%, 13.7%);
   --module-prominent-text: hsl(0, 0%, 100%);
   --module-light-text: hsl(0, 0%, 75%);
   --anchor-color: hsl(196.1, 76.1%, 72.2%);
@@ -373,9 +373,10 @@ ul, ol {
 .thin-layout #content {
   margin-right: unset;
 }
-.thin-layout #content:first-of-type .module {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+.thin-layout #content .module {
+  border-radius: 0;
+  border-left-width: 0;
+  border-right-width: 0;
 }
 
 .thin-layout .column.two-thirds, .thin-layout .column.one-third {

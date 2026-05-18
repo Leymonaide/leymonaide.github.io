@@ -67,10 +67,20 @@ export class Router
 
     public static routeUri(uri: string): IRoute|null
     {
+        // The Node.js server has neither "window" nor "location" APIs, so a
+        // hardcoded check is necessary. The `process.env` check is substituted
+        // with "false" by the client JS builder, and is subsequently removed
+        // for being dead code.
+        const curHost = process.env
+            ? "https://leymonaide.github.io"
+            : window.location.origin;
+
+        const url = new URL(uri, curHost);
+        const urlPlusIndex = new URL((uri + "/index").replace(/\/+/g, "/"), curHost);
+
         for (const route of this.ROUTES)
         {
-            // TODO: Support for wildcard matching.
-            if (uri == route.uri || (uri + "/index").replace(/\/+/g, "/") == route.uri)
+            if (url.pathname == route.uri || urlPlusIndex.pathname == route.uri)
             {
                 return route;
             }

@@ -477,10 +477,11 @@ ul, ol
 {
     margin-right: unset;
 
-    &:first-of-type .module
+    .module
     {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
+        border-radius: 0;
+        border-left-width: 0;
+        border-right-width: 0;
     }
 }
 

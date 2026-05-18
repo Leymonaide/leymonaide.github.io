@@ -20,6 +20,12 @@ home_intro:
 
 mini_profile:
   see_more_about_me: See more about me
+  see_more_about_her: See more about her
+  see_more_about_him: See more about him
+  see_more_about_them: See more about them
+  visit_her_website: Visit her website
+  visit_his_website: Visit his website
+  visit_their_website: Visit their website
 
 blog_preview:
   title: Recent blog posts

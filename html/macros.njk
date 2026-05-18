@@ -29,3 +29,53 @@
         </ul>
     </div>
 {% endmacro %}
+
+{% macro mini_profile(
+    subject_name,
+    avatar_url,
+    link_url,
+    link_text,
+    classes = [],
+    attributes = {},
+    title = null
+) %}
+    <div class="{{ ('module mini-profile' ~ ' ' ~ classes|join(' '))|trim }}"
+        {% for key, value in attributes %}
+        {{ key }}="{{ value }}"
+        {% endfor %}
+    >
+        {% if title %}
+            <div class="module-header with-line">
+                <h3 data-string="{{ title }}"></h3>
+            </div>
+        {% endif %}
+        <a class="mini-profile-link-wrapper" href="{{ link_url }}">
+            <div class="mini-profile-content">
+                <img class="avatar size32" src="{{ avatar_url }}">
+                <div>
+                    <b class="name">{{ subject_name }}</b>
+                    <div class="about-link" data-string="{{ link_text }}"></div>
+                </div>
+            </div>
+        </a>
+        <div class="socials">
+            <ul>
+                <li class="social-link">
+                    <a href="//bsky.app/profile/loveofleytoo.bsky.social" title="Bluesky">
+                        <span class="icon icon-bluesky"></span>
+                    </a>
+                </li>
+                <li class="social-link">
+                    <a href="//twitter.com/Leym0naide" title="Twitter">
+                        <span class="icon icon-twitter"></span>
+                    </a>
+                </li>
+                <li class="social-link">
+                    <a href="//github.com/Leymonaide" title="GitHub">
+                        <span class="icon icon-github"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endmacro %}

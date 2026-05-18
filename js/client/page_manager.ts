@@ -17,10 +17,11 @@
  */
 
 import { BodyClasses } from "../interface/BodyClasses";
-import { Router } from "../shared/Router";
+import { IRoute, Router } from "../shared/Router";
 import * as navigation from "./navigation";
 import * as localization from "./localization";
 import * as eventManager from "./event_manager";
+import * as layoutManager from "./layout_manager";
 import { PageTitle } from "../shared/PageTitle";
 
 const g_pageCache: Record<string, string> = {};
@@ -39,12 +40,9 @@ export async function loadInitialPage(): Promise<void>
 {
     await loadPageContainer();
 
-    // The common template for the sitewide navigation doesn't have a
-    // selected item, so the corresponding navigation item to the current
-    // page must be selected now.
-    navigation.updateNavBarSelectedItem();
-    
-    await loadPageFragmentsForUrl(window.location.pathname);
+    await navigateToPage(window.location.pathname, null, true, {
+        isInitialLoad: true,
+    });
 
     // Remove the initial loading class. If more than 250 milliseconds have
     // ellapsed since the page started loading, then a transition animation
@@ -109,11 +107,15 @@ export async function navigateToPage(
     url: string,
     navigationSourceElement: HTMLElement|null = null,
     noPushState: boolean = false,
+    options: {
+        isInitialLoad?: boolean,
+    } = {},
 ): Promise<void>
 {
     const route = Router.routeUri(url);
+    const isInitialLoad = options?.isInitialLoad ?? false;
 
-    if (!route)
+    if (!isInitialLoad && !route)
     {
         // This is a bad URL, so we will navigate to it manually.
         window.location.href = url;
@@ -130,29 +132,12 @@ export async function navigateToPage(
             window.history.pushState(null, null, url);
         navigation.updateNavBarSelectedItem();
 
-        let pageTitle: PageTitle;
-        try
-        {
-            if (route.pageTitle)
-            {
-                const pageTitleStr = localization.getMessage(route.pageTitle);
-                pageTitle = new PageTitle(pageTitleStr);
-            }
-            else
-            {
-                pageTitle = new PageTitle("");
-            }
-        }
-        catch (e)
-        {
-            console.error("Failed to get page title", e);
-            pageTitle = new PageTitle("");
-        }
-
-        document.title = pageTitle.getDecoratedTitle();
+        updatePageTitle(route);
 
         document.body.classList.remove(BodyClasses.LoadingAjax);
         navigationSourceElement?.classList.remove("lockup-target");
+
+        layoutManager.applyThinLayoutMutations();
     }
     catch (e)
     {
@@ -182,6 +167,30 @@ async function requestPageFragments(fragmentsUri: string): Promise<string>
 
     g_pageCache[fragmentsUri] = text;
     return text;
+}
+
+function updatePageTitle(route: IRoute): void
+{
+    let pageTitle: PageTitle;
+    try
+    {
+        if (route.pageTitle)
+        {
+            const pageTitleStr = localization.getMessage(route.pageTitle);
+            pageTitle = new PageTitle(pageTitleStr);
+        }
+        else
+        {
+            pageTitle = new PageTitle("");
+        }
+    }
+    catch (e)
+    {
+        console.error("Failed to get page title", e);
+        pageTitle = new PageTitle("");
+    }
+
+    document.title = pageTitle.getDecoratedTitle();
 }
 
 function decoratePageFooter(): void

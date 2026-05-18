@@ -230,6 +230,9 @@ function buildJsScripts(): NodeJS.WritableStream
         gulp_esbuild({
             outfile: outputBundleName,
             bundle: true,
+            define: {
+                "process.env": "false",
+            }
         }),
         g_superFastBuild ? doNothingTransform() : gulp_uglify(),
         // g_superFastBuild ? doNothingTransform() : CacheManager.writeToCache(

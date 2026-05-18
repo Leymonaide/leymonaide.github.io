@@ -21,9 +21,9 @@ export function get(name: string): string|undefined
     const cookies = document.cookie ? document.cookie.split(/\s*;\s*/) : [];
     const jar = {};
 
-    for (let i of cookies)
+    for (let cookie of cookies)
     {
-        const parts = cookies[i].split("=");
+        const parts = cookie.split("=");
         const value = parts.slice(1).join("=");
 
         try
